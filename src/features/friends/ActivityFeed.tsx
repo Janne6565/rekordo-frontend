@@ -209,9 +209,13 @@ function Sentence({
         />
       );
     case "FRIENDSHIP_ACCEPTED":
+      /*
+       * The one line both people in it can read, and the server draws the *other* one on
+       * it either way — so the sentence, not the name, is what changes sides.
+       */
       return (
         <Trans
-          i18nKey="friends.line.accepted"
+          i18nKey={entry.byViewer ? "friends.line.acceptedByYou" : "friends.line.accepted"}
           values={{ name }}
           components={{ person, title: <span /> }}
         />

@@ -107,6 +107,7 @@ export type SyncCopyDtoFieldClocks = {[key: string]: string};
 export interface SyncCopyDto {
   id?: string;
   releaseId?: string;
+  albumId?: string;
   pendingBarcode?: string;
   manualTitle?: string;
   manualArtist?: string;
@@ -634,6 +635,7 @@ export interface ActivityEntryDto {
   occurredAt?: string;
   copyCount?: number;
   collapsedCovers?: string[];
+  byViewer?: boolean;
 }
 
 export interface ActivityFeedDto {

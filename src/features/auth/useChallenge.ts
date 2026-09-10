@@ -25,6 +25,10 @@ export interface Challenge {
   /**
    * Whether the submit may go ahead. False while the site key is still being fetched, so a
    * form cannot race the answer and post without a token the server is about to demand.
+   *
+   * <p>Always true while the server is only observing. The widget is still drawn and its
+   * token still sent -- but one that fails to load must not hold a submit the server was
+   * going to accept anyway.
    */
   readonly satisfied: boolean;
   readonly token: string | null;
@@ -53,6 +57,11 @@ export function useChallenge(action: ChallengeAction): Challenge {
   });
 
   const siteKey = query.data?.siteKey ?? null;
+  /*
+   * Told, not inferred from the site key. The rollout state is keys present and nothing
+   * refused, so that clients start sending tokens before the server starts demanding them.
+   */
+  const enforced = query.data?.enforced === true;
   const [element, setElement] = useState<HTMLDivElement | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -129,7 +138,7 @@ export function useChallenge(action: ChallengeAction): Challenge {
      * endpoint answered badly would be the worse failure -- and it is not this client's
      * decision anyway: the server verifies, and answers 403 if it wanted a token.
      */
-    satisfied: query.isPending ? false : siteKey === null || token !== null,
+    satisfied: query.isPending ? false : siteKey === null || !enforced || token !== null,
     token,
     reset,
     failed,

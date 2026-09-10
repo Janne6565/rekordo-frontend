@@ -1029,8 +1029,11 @@ export interface AuthProviderDto {
 
 export type ChallengeDtoSiteKey = string | null;
 
+export type ChallengeDtoEnforced = boolean | null;
+
 export interface ChallengeDto {
   siteKey?: ChallengeDtoSiteKey;
+  enforced?: ChallengeDtoEnforced;
 }
 
 export type StorageUsageDtoPhotoBytes = number | null;

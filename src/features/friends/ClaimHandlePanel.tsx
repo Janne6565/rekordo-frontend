@@ -21,7 +21,7 @@ const REASON_KEYS = {
   TAKEN: "friends.claim.reason.taken",
   RESERVED: "friends.claim.reason.reserved",
   OK: "friends.claim.reason.ok",
-} as const satisfies Record<HandleAvailabilityDtoReason, string>;
+} as const satisfies Record<NonNullable<HandleAvailabilityDtoReason>, string>;
 
 export function ClaimHandlePanel() {
   const { t } = useTranslation();

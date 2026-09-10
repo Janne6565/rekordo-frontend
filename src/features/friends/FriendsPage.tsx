@@ -329,9 +329,9 @@ function RelationshipButton({
 
 interface RequestCardProps {
   readonly name: string;
-  readonly avatarUrl: string | undefined;
+  readonly avatarUrl: string | null | undefined;
   readonly handle: string;
-  readonly copies: number | undefined;
+  readonly copies: number | null | undefined;
   readonly mutual: number;
   readonly onAccept: () => void;
   readonly onDecline: () => void;
@@ -359,7 +359,7 @@ function RequestCard({
         </div>
         <div className="truncate text-[11.5px] text-ink-muted">
           @{handle}
-          {copies !== undefined && ` · ${t("friends.copies", { count: copies })}`}
+          {copies != null && ` · ${t("friends.copies", { count: copies })}`}
           {mutual > 0 && ` · ${t("friends.mutual", { count: mutual })}`}
         </div>
       </div>
@@ -453,13 +453,13 @@ const SHELF_KEYS = {
   ONLY_ME: "friends.shelf.only_me",
   FRIENDS: "friends.shelf.friends",
   PUBLIC: "friends.shelf.public",
-} as const satisfies Record<SharingSettingsDtoCollectionVisibility, string>;
+} as const satisfies Record<NonNullable<SharingSettingsDtoCollectionVisibility>, string>;
 
 const SHELF_WISHLIST_KEYS = {
   ONLY_ME: "friends.shelf.wishlist.only_me",
   FRIENDS: "friends.shelf.wishlist.friends",
   PUBLIC: "friends.shelf.wishlist.public",
-} as const satisfies Record<SharingSettingsDtoCollectionVisibility, string>;
+} as const satisfies Record<NonNullable<SharingSettingsDtoCollectionVisibility>, string>;
 
 /** The "your shelf is open to friends" card — the settings said back to you in a sentence. */
 function ShelfSummary({ logic }: { readonly logic: Logic }) {

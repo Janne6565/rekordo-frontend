@@ -8,7 +8,7 @@ import { Lock } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-const ORDER: readonly NotificationPreferenceDtoCategory[] = [
+const ORDER: readonly NonNullable<NotificationPreferenceDtoCategory>[] = [
   "FRIEND_REQUEST",
   "FRIEND_ACTIVITY",
   "SECURITY",

@@ -93,10 +93,10 @@ export function photoFromDto(dto: SyncPhotoDto): Photo | null {
   // An owner is required, but which one is not: a photo pictures a copy or a wishlist
   // entry. A row naming neither is unreachable and is dropped rather than stored.
   if (
-    dto.id === undefined ||
-    (dto.copyId === undefined && dto.wishId === undefined) ||
-    dto.createdAt === undefined ||
-    dto.fieldClocks === undefined
+    dto.id == null ||
+    (dto.copyId == null && dto.wishId == null) ||
+    dto.createdAt == null ||
+    dto.fieldClocks == null
   ) {
     return null;
   }
@@ -116,12 +116,12 @@ export function photoFromDto(dto: SyncPhotoDto): Photo | null {
 
 export function wishFromDto(dto: SyncWishDto): WishlistItem | null {
   if (
-    dto.id === undefined ||
-    dto.albumId === undefined ||
-    dto.title === undefined ||
-    dto.artistName === undefined ||
-    dto.createdAt === undefined ||
-    dto.fieldClocks === undefined
+    dto.id == null ||
+    dto.albumId == null ||
+    dto.title == null ||
+    dto.artistName == null ||
+    dto.createdAt == null ||
+    dto.fieldClocks == null
   ) {
     return null;
   }
@@ -176,16 +176,18 @@ function toDto(copy: Copy): SyncCopyDto {
 }
 
 /**
- * The server types every field optional, so a record is validated here before it is
- * allowed anywhere near the local store — a malformed row should be dropped, not written.
+ * Nothing the server sends is guaranteed by its type — every field is `?: T | null` — so a
+ * record is validated here before it is allowed anywhere near the local store: a malformed
+ * row should be dropped, not written. `== null` throughout, because absent and null are the
+ * same answer on this wire and a row missing an id is unusable either way.
  */
 export function fromDto(dto: SyncCopyDto): Copy | null {
   if (
-    dto.id === undefined ||
-    dto.releaseId === undefined ||
-    dto.currency === undefined ||
-    dto.createdAt === undefined ||
-    dto.fieldClocks === undefined
+    dto.id == null ||
+    dto.releaseId == null ||
+    dto.currency == null ||
+    dto.createdAt == null ||
+    dto.fieldClocks == null
   ) {
     return null;
   }
@@ -220,11 +222,11 @@ export function fromDto(dto: SyncCopyDto): Copy | null {
 
 function toPage(
   page: {
-    copies?: SyncCopyDto[];
-    wishes?: SyncWishDto[];
-    photos?: SyncPhotoDto[];
-    cursor?: number;
-    hasMore?: boolean;
+    copies?: SyncCopyDto[] | null;
+    wishes?: SyncWishDto[] | null;
+    photos?: SyncPhotoDto[] | null;
+    cursor?: number | null;
+    hasMore?: boolean | null;
   },
   cursor: number,
 ): SyncPage {

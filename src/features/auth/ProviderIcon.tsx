@@ -10,7 +10,7 @@
  * An id this does not know renders nothing, so an added provider is a plain label rather
  * than a broken button.
  */
-export function ProviderIcon({ providerId }: { readonly providerId: string | undefined }) {
+export function ProviderIcon({ providerId }: { readonly providerId: string | null | undefined }) {
   if (providerId === "google") return <GoogleMark />;
   if (providerId === "apple") return <AppleMark />;
   return null;

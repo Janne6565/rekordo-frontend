@@ -104,12 +104,12 @@ export function useAccountLogic() {
   const sentAt = confirmation.data?.sentAt;
   const retryAfter = confirmation.data?.retryAfter ?? 0;
   useEffect(() => {
-    if (sentAt === undefined || retryAfter === 0) return;
+    if (sentAt == null || retryAfter === 0) return;
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [sentAt, retryAfter]);
   const cooldown =
-    sentAt === undefined
+    sentAt == null
       ? 0
       : Math.max(0, Math.ceil((new Date(sentAt).getTime() + retryAfter * 1000 - now) / 1000));
 

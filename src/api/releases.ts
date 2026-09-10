@@ -27,18 +27,22 @@ import { FORMATS, readArchivedAlbumCovers, withArchivedCovers } from "@janne6565
 /**
  * The boundary between the generated client and the domain.
  *
- * springdoc emits every property as optional, so the generated `ReleaseDto` has `?` on
- * fields the server always sends. Rather than let that optionality leak into every screen
- * as `!` assertions, payloads are validated once here and anything unusable is dropped —
- * a search that returns one malformed row should show the other nine, not fail.
+ * Every property the server does not guarantee is generated as `?: T | null`, so the fields
+ * a `ReleaseDto` always carries in practice are still typed as maybe-missing. Rather than
+ * let that leak into every screen as `!` assertions, payloads are validated once here and
+ * anything unusable is dropped — a search that returns one malformed row should show the
+ * other nine, not fail.
+ *
+ * `== null` throughout, never `=== undefined`: absent and null are the same answer on this
+ * wire, and a guard that catches only one of them narrows the other to a type it is not.
  */
 
-function toCoverTheme(dto: CoverThemeDto | undefined): CoverTheme | null {
+function toCoverTheme(dto: CoverThemeDto | null | undefined): CoverTheme | null {
   if (
-    dto?.dominantColor === undefined ||
-    dto.accentColor === undefined ||
-    dto.lightness === undefined ||
-    dto.dark === undefined
+    dto?.dominantColor == null ||
+    dto.accentColor == null ||
+    dto.lightness == null ||
+    dto.dark == null
   ) {
     return null;
   }
@@ -50,18 +54,13 @@ function toCoverTheme(dto: CoverThemeDto | undefined): CoverTheme | null {
   };
 }
 
-function isFormat(value: string | undefined): value is Format {
-  return value !== undefined && (FORMATS as readonly string[]).includes(value);
+function isFormat(value: string | null | undefined): value is Format {
+  return value != null && (FORMATS as readonly string[]).includes(value);
 }
 
 export function toRelease(dto: ReleaseDto, now: number): Release | null {
   // Without these four there is nothing to show and nothing to key a copy on.
-  if (
-    dto.id === undefined ||
-    dto.albumId === undefined ||
-    dto.title === undefined ||
-    dto.artistName === undefined
-  ) {
+  if (dto.id == null || dto.albumId == null || dto.title == null || dto.artistName == null) {
     return null;
   }
   return {
@@ -116,7 +115,7 @@ export async function lookupPressings(albumId: string, limit = 25): Promise<Rele
 
 function toArtist(dto: ArtistDto): Artist | null {
   // Without these two there is nothing to show and nothing to open a discography with.
-  if (dto.mbid === undefined || dto.name === undefined) return null;
+  if (dto.mbid == null || dto.name == null) return null;
   return {
     mbid: dto.mbid,
     name: dto.name,
@@ -146,7 +145,7 @@ export async function findArtistImage(mbid: string): Promise<string | null> {
 }
 
 function toAlbum(dto: AlbumDto): Album | null {
-  if (dto.albumId === undefined || dto.title === undefined) return null;
+  if (dto.albumId == null || dto.title == null) return null;
   return {
     albumId: dto.albumId,
     title: dto.title,
@@ -219,7 +218,7 @@ export async function lookupAlbumCovers(
   const pages = await Promise.all(batches.map((albumId) => albumCovers({ albumId })));
   const covers = new Map<string, string | null>();
   for (const dto of pages.flat()) {
-    if (dto.albumId !== undefined) covers.set(dto.albumId, dto.coverArtUrl ?? null);
+    if (dto.albumId != null) covers.set(dto.albumId, dto.coverArtUrl ?? null);
   }
   // An imported archive brought the answers the deployment it came from could give. This
   // mirror may never have heard of those albums — that is not a fact about the record, it

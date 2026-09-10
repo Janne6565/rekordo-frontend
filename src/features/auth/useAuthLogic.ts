@@ -89,7 +89,7 @@ export function useAuthLogic() {
               confirmedAge: ageConfirmed,
             })
           : await login({ email: email.trim(), password, rememberMe });
-      if (session.accessToken === undefined || session.user === undefined) {
+      if (session.accessToken == null || session.user == null) {
         throw new Error("The server did not return a session");
       }
       setAccessToken(session.accessToken);

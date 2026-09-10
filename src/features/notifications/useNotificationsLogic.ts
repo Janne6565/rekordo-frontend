@@ -55,7 +55,7 @@ export function useNotificationsLogic() {
 
   const flip = useMutation({
     mutationFn: async (next: {
-      category: NotificationPreferenceDtoCategory;
+      category: NonNullable<NotificationPreferenceDtoCategory>;
       mail: boolean;
       push: boolean;
     }) => updatePreference(next),
@@ -86,7 +86,7 @@ export function useNotificationsLogic() {
         (row) => row.mailLocked === true || (row.mail !== true && row.push !== true),
       ),
     setChannel: (
-      category: NotificationPreferenceDtoCategory,
+      category: NonNullable<NotificationPreferenceDtoCategory>,
       channel: "mail" | "push",
       on: boolean,
     ) => {

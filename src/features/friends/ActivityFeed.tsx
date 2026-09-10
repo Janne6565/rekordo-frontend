@@ -234,12 +234,12 @@ function Sentence({
 function Cover({
   url,
   format,
-}: { readonly url: string | undefined; readonly format: ActivityEntryDto["format"] }) {
+}: { readonly url: string | null | undefined; readonly format: ActivityEntryDto["format"] }) {
   return (
     // Never a bare img: four covers in ten are a 404 at the archive, so this falls back to
     // the format silhouette the same way every other tile in the app does.
     <ReleaseArt
-      release={{ coverArtUrl: url ?? null, format }}
+      release={{ coverArtUrl: url ?? null, format: format ?? undefined }}
       className="h-10 w-12 flex-none"
       loading="lazy"
     />

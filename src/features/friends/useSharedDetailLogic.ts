@@ -38,7 +38,9 @@ export interface SharedDetail {
  * record's "next" look like a shelf that never finishes.
  */
 export function useSharedDetailLogic(
-  ids: readonly (string | undefined)[],
+  // Null as well as undefined: the ids come straight off the wire, where a field the server
+  // did not fill in arrives as an explicit null.
+  ids: readonly (string | null | undefined)[],
   openId: string | undefined,
   onOpen: (id: string | undefined) => void,
 ): SharedDetail {
@@ -55,7 +57,7 @@ export function useSharedDetailLogic(
       if (index < 0) return;
       const target = idsRef.current[index + step];
       // An unnamed row is not something that can be addressed, so the shelf ends there.
-      if (target === undefined || target === "") return;
+      if (target == null || target === "") return;
       onOpen(target);
     },
     [index, onOpen],

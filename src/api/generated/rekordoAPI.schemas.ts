@@ -36,174 +36,332 @@ export interface UpdateSharingRequest {
   findable: boolean;
 }
 
-export type SharingSettingsDtoCollectionVisibility = typeof SharingSettingsDtoCollectionVisibility[keyof typeof SharingSettingsDtoCollectionVisibility];
+export type SharingSettingsDtoHandle = string | null;
 
+export type SharingSettingsDtoFindable = boolean | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SharingSettingsDtoCollectionVisibility = {
-  ONLY_ME: 'ONLY_ME',
-  FRIENDS: 'FRIENDS',
-  PUBLIC: 'PUBLIC',
-} as const;
+export type SharingSettingsDtoCollectionVisibility = 'ONLY_ME' | 'FRIENDS' | 'PUBLIC' | null;
 
-export type SharingSettingsDtoWishlistVisibility = typeof SharingSettingsDtoWishlistVisibility[keyof typeof SharingSettingsDtoWishlistVisibility];
+export type SharingSettingsDtoWishlistVisibility = 'ONLY_ME' | 'FRIENDS' | 'PUBLIC' | null;
 
+export type SharingSettingsDtoPricesPublic = boolean | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SharingSettingsDtoWishlistVisibility = {
-  ONLY_ME: 'ONLY_ME',
-  FRIENDS: 'FRIENDS',
-  PUBLIC: 'PUBLIC',
-} as const;
+export type SharingSettingsDtoHandleChangesRemaining = number | null;
 
 export interface SharingSettingsDto {
-  handle?: string;
-  findable?: boolean;
+  handle?: SharingSettingsDtoHandle;
+  findable?: SharingSettingsDtoFindable;
   collectionVisibility?: SharingSettingsDtoCollectionVisibility;
   wishlistVisibility?: SharingSettingsDtoWishlistVisibility;
-  pricesPublic?: boolean;
-  handleChangesRemaining?: number;
+  pricesPublic?: SharingSettingsDtoPricesPublic;
+  handleChangesRemaining?: SharingSettingsDtoHandleChangesRemaining;
 }
+
+export type CoverThemeDtoDominantColor = string | null;
+
+export type CoverThemeDtoAccentColor = string | null;
+
+export type CoverThemeDtoLightness = number | null;
+
+export type CoverThemeDtoDark = boolean | null;
 
 export interface CoverThemeDto {
-  dominantColor?: string;
-  accentColor?: string;
-  lightness?: number;
-  dark?: boolean;
+  dominantColor?: CoverThemeDtoDominantColor;
+  accentColor?: CoverThemeDtoAccentColor;
+  lightness?: CoverThemeDtoLightness;
+  dark?: CoverThemeDtoDark;
 }
 
-export type ReleaseDtoFormat = typeof ReleaseDtoFormat[keyof typeof ReleaseDtoFormat];
+export type ReleaseDtoId = string | null;
 
+export type ReleaseDtoAlbumId = string | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ReleaseDtoFormat = {
-  VINYL: 'VINYL',
-  CD: 'CD',
-  CASSETTE: 'CASSETTE',
-  DIGITAL: 'DIGITAL',
-  OTHER: 'OTHER',
-} as const;
+export type ReleaseDtoTitle = string | null;
+
+export type ReleaseDtoArtistName = string | null;
+
+export type ReleaseDtoYear = number | null;
+
+export type ReleaseDtoFormat = 'VINYL' | 'CD' | 'CASSETTE' | 'DIGITAL' | 'OTHER' | null;
+
+export type ReleaseDtoLabel = string | null;
+
+export type ReleaseDtoCatalogNumber = string | null;
+
+export type ReleaseDtoCountry = string | null;
+
+export type ReleaseDtoBarcode = string | null;
+
+export type ReleaseDtoReleaseDate = string | null;
+
+export type ReleaseDtoTrackCount = number | null;
+
+export type ReleaseDtoDiscCount = number | null;
+
+export type ReleaseDtoCoverArtUrl = string | null;
+
+export type ReleaseDtoCoverTheme = CoverThemeDto | null;
 
 export interface ReleaseDto {
-  id?: string;
-  albumId?: string;
-  title?: string;
-  artistName?: string;
-  year?: number;
+  id?: ReleaseDtoId;
+  albumId?: ReleaseDtoAlbumId;
+  title?: ReleaseDtoTitle;
+  artistName?: ReleaseDtoArtistName;
+  year?: ReleaseDtoYear;
   format?: ReleaseDtoFormat;
-  label?: string;
-  catalogNumber?: string;
-  country?: string;
-  barcode?: string;
-  releaseDate?: string;
-  trackCount?: number;
-  discCount?: number;
-  coverArtUrl?: string;
-  coverTheme?: CoverThemeDto;
+  label?: ReleaseDtoLabel;
+  catalogNumber?: ReleaseDtoCatalogNumber;
+  country?: ReleaseDtoCountry;
+  barcode?: ReleaseDtoBarcode;
+  releaseDate?: ReleaseDtoReleaseDate;
+  trackCount?: ReleaseDtoTrackCount;
+  discCount?: ReleaseDtoDiscCount;
+  coverArtUrl?: ReleaseDtoCoverArtUrl;
+  coverTheme?: ReleaseDtoCoverTheme;
 }
 
-export type SyncCopyDtoFieldClocks = {[key: string]: string};
+export type SyncCopyDtoId = string | null;
+
+export type SyncCopyDtoReleaseId = string | null;
+
+export type SyncCopyDtoAlbumId = string | null;
+
+export type SyncCopyDtoPendingBarcode = string | null;
+
+export type SyncCopyDtoManualTitle = string | null;
+
+export type SyncCopyDtoManualArtist = string | null;
+
+export type SyncCopyDtoManualYear = number | null;
+
+export type SyncCopyDtoManualLabel = string | null;
+
+export type SyncCopyDtoManualCatalogNumber = string | null;
+
+export type SyncCopyDtoManualFormat = string | null;
+
+export type SyncCopyDtoCondition = string | null;
+
+export type SyncCopyDtoSleeveCondition = string | null;
+
+export type SyncCopyDtoCatalogArt = string | null;
+
+export type SyncCopyDtoPricePaidCents = number | null;
+
+export type SyncCopyDtoCurrency = string | null;
+
+export type SyncCopyDtoPurchasedOn = string | null;
+
+export type SyncCopyDtoPurchasedAt = string | null;
+
+export type SyncCopyDtoNotes = string | null;
+
+export type SyncCopyDtoNotesConflict = string | null;
+
+export type SyncCopyDtoRating = number | null;
+
+export type SyncCopyDtoHidden = boolean | null;
+
+export type SyncCopyDtoCreatedAt = number | null;
+
+export type SyncCopyDtoDeletedAt = number | null;
+
+export type SyncCopyDtoFieldClocksAnyOf = {[key: string]: string};
+
+export type SyncCopyDtoFieldClocks = SyncCopyDtoFieldClocksAnyOf | null;
 
 export interface SyncCopyDto {
-  id?: string;
-  releaseId?: string;
-  albumId?: string;
-  pendingBarcode?: string;
-  manualTitle?: string;
-  manualArtist?: string;
-  manualYear?: number;
-  manualLabel?: string;
-  manualCatalogNumber?: string;
-  manualFormat?: string;
-  condition?: string;
-  sleeveCondition?: string;
-  catalogArt?: string;
-  pricePaidCents?: number;
-  currency?: string;
-  purchasedOn?: string;
-  purchasedAt?: string;
-  notes?: string;
-  notesConflict?: string;
-  rating?: number;
-  hidden?: boolean;
-  createdAt?: number;
-  deletedAt?: number;
+  id?: SyncCopyDtoId;
+  releaseId?: SyncCopyDtoReleaseId;
+  albumId?: SyncCopyDtoAlbumId;
+  pendingBarcode?: SyncCopyDtoPendingBarcode;
+  manualTitle?: SyncCopyDtoManualTitle;
+  manualArtist?: SyncCopyDtoManualArtist;
+  manualYear?: SyncCopyDtoManualYear;
+  manualLabel?: SyncCopyDtoManualLabel;
+  manualCatalogNumber?: SyncCopyDtoManualCatalogNumber;
+  manualFormat?: SyncCopyDtoManualFormat;
+  condition?: SyncCopyDtoCondition;
+  sleeveCondition?: SyncCopyDtoSleeveCondition;
+  catalogArt?: SyncCopyDtoCatalogArt;
+  pricePaidCents?: SyncCopyDtoPricePaidCents;
+  currency?: SyncCopyDtoCurrency;
+  purchasedOn?: SyncCopyDtoPurchasedOn;
+  purchasedAt?: SyncCopyDtoPurchasedAt;
+  notes?: SyncCopyDtoNotes;
+  notesConflict?: SyncCopyDtoNotesConflict;
+  rating?: SyncCopyDtoRating;
+  hidden?: SyncCopyDtoHidden;
+  createdAt?: SyncCopyDtoCreatedAt;
+  deletedAt?: SyncCopyDtoDeletedAt;
   fieldClocks?: SyncCopyDtoFieldClocks;
 }
 
-export type SyncPhotoDtoFieldClocks = {[key: string]: string};
+export type SyncPhotoDtoId = string | null;
+
+export type SyncPhotoDtoCopyId = string | null;
+
+export type SyncPhotoDtoWishId = string | null;
+
+export type SyncPhotoDtoStorageKey = string | null;
+
+export type SyncPhotoDtoContentType = string | null;
+
+export type SyncPhotoDtoByteSize = number | null;
+
+export type SyncPhotoDtoSortIndex = number | null;
+
+export type SyncPhotoDtoCreatedAt = number | null;
+
+export type SyncPhotoDtoDeletedAt = number | null;
+
+export type SyncPhotoDtoFieldClocksAnyOf = {[key: string]: string};
+
+export type SyncPhotoDtoFieldClocks = SyncPhotoDtoFieldClocksAnyOf | null;
 
 export interface SyncPhotoDto {
-  id?: string;
-  copyId?: string;
-  wishId?: string;
-  storageKey?: string;
-  contentType?: string;
-  byteSize?: number;
-  sortIndex?: number;
-  createdAt?: number;
-  deletedAt?: number;
+  id?: SyncPhotoDtoId;
+  copyId?: SyncPhotoDtoCopyId;
+  wishId?: SyncPhotoDtoWishId;
+  storageKey?: SyncPhotoDtoStorageKey;
+  contentType?: SyncPhotoDtoContentType;
+  byteSize?: SyncPhotoDtoByteSize;
+  sortIndex?: SyncPhotoDtoSortIndex;
+  createdAt?: SyncPhotoDtoCreatedAt;
+  deletedAt?: SyncPhotoDtoDeletedAt;
   fieldClocks?: SyncPhotoDtoFieldClocks;
 }
 
-export type SyncPushRequestOrigins = {[key: string]: string};
+/**
+ * @minItems 0
+ * @maxItems 500
+ */
+export type SyncPushRequestCopies = SyncCopyDto[] | null;
+
+/**
+ * @minItems 0
+ * @maxItems 500
+ */
+export type SyncPushRequestWishes = SyncWishDto[] | null;
+
+/**
+ * @minItems 0
+ * @maxItems 500
+ */
+export type SyncPushRequestPhotos = SyncPhotoDto[] | null;
+
+/**
+ * @minItems 0
+ * @maxItems 500
+ */
+export type SyncPushRequestReleases = ReleaseDto[] | null;
+
+export type SyncPushRequestOriginsAnyOf = {[key: string]: string};
+
+export type SyncPushRequestOrigins = SyncPushRequestOriginsAnyOf | null;
 
 export interface SyncPushRequest {
   /**
    * @minItems 0
    * @maxItems 500
    */
-  copies?: SyncCopyDto[];
+  copies?: SyncPushRequestCopies;
   /**
    * @minItems 0
    * @maxItems 500
    */
-  wishes?: SyncWishDto[];
+  wishes?: SyncPushRequestWishes;
   /**
    * @minItems 0
    * @maxItems 500
    */
-  photos?: SyncPhotoDto[];
+  photos?: SyncPushRequestPhotos;
   /**
    * @minItems 0
    * @maxItems 500
    */
-  releases?: ReleaseDto[];
+  releases?: SyncPushRequestReleases;
   origins?: SyncPushRequestOrigins;
 }
 
-export type SyncWishDtoFieldClocks = {[key: string]: string};
+export type SyncWishDtoId = string | null;
+
+export type SyncWishDtoAlbumId = string | null;
+
+export type SyncWishDtoReleaseId = string | null;
+
+export type SyncWishDtoPendingBarcode = string | null;
+
+export type SyncWishDtoTitle = string | null;
+
+export type SyncWishDtoArtistName = string | null;
+
+export type SyncWishDtoYear = number | null;
+
+export type SyncWishDtoDesiredFormat = string | null;
+
+export type SyncWishDtoNote = string | null;
+
+export type SyncWishDtoSortIndex = number | null;
+
+export type SyncWishDtoCreatedAt = number | null;
+
+export type SyncWishDtoDeletedAt = number | null;
+
+export type SyncWishDtoFieldClocksAnyOf = {[key: string]: string};
+
+export type SyncWishDtoFieldClocks = SyncWishDtoFieldClocksAnyOf | null;
 
 export interface SyncWishDto {
-  id?: string;
-  albumId?: string;
-  releaseId?: string;
-  pendingBarcode?: string;
-  title?: string;
-  artistName?: string;
-  year?: number;
-  desiredFormat?: string;
-  note?: string;
-  sortIndex?: number;
-  createdAt?: number;
-  deletedAt?: number;
+  id?: SyncWishDtoId;
+  albumId?: SyncWishDtoAlbumId;
+  releaseId?: SyncWishDtoReleaseId;
+  pendingBarcode?: SyncWishDtoPendingBarcode;
+  title?: SyncWishDtoTitle;
+  artistName?: SyncWishDtoArtistName;
+  year?: SyncWishDtoYear;
+  desiredFormat?: SyncWishDtoDesiredFormat;
+  note?: SyncWishDtoNote;
+  sortIndex?: SyncWishDtoSortIndex;
+  createdAt?: SyncWishDtoCreatedAt;
+  deletedAt?: SyncWishDtoDeletedAt;
   fieldClocks?: SyncWishDtoFieldClocks;
 }
 
+export type SyncPullDtoCopies = SyncCopyDto[] | null;
+
+export type SyncPullDtoWishes = SyncWishDto[] | null;
+
+export type SyncPullDtoPhotos = SyncPhotoDto[] | null;
+
+export type SyncPullDtoCursor = number | null;
+
+export type SyncPullDtoHasMore = boolean | null;
+
 export interface SyncPullDto {
-  copies?: SyncCopyDto[];
-  wishes?: SyncWishDto[];
-  photos?: SyncPhotoDto[];
-  cursor?: number;
-  hasMore?: boolean;
+  copies?: SyncPullDtoCopies;
+  wishes?: SyncPullDtoWishes;
+  photos?: SyncPullDtoPhotos;
+  cursor?: SyncPullDtoCursor;
+  hasMore?: SyncPullDtoHasMore;
 }
 
+export type PhotoUploadDtoId = string | null;
+
+export type PhotoUploadDtoStorageKey = string | null;
+
+export type PhotoUploadDtoContentType = string | null;
+
+export type PhotoUploadDtoByteSize = number | null;
+
 export interface PhotoUploadDto {
-  id?: string;
-  storageKey?: string;
-  contentType?: string;
-  byteSize?: number;
+  id?: PhotoUploadDtoId;
+  storageKey?: PhotoUploadDtoStorageKey;
+  contentType?: PhotoUploadDtoContentType;
+  byteSize?: PhotoUploadDtoByteSize;
 }
+
+export type RegisterDeviceRequestLabel = string | null;
 
 export interface RegisterDeviceRequest {
   /** @minLength 1 */
@@ -212,16 +370,28 @@ export interface RegisterDeviceRequest {
   pushToken: string;
   /** @minLength 1 */
   platform: string;
-  label?: string;
+  label?: RegisterDeviceRequestLabel;
 }
 
+export type NotificationDeviceDtoId = string | null;
+
+export type NotificationDeviceDtoPlatform = string | null;
+
+export type NotificationDeviceDtoLabel = string | null;
+
+export type NotificationDeviceDtoMutedAt = string | null;
+
+export type NotificationDeviceDtoCreatedAt = string | null;
+
+export type NotificationDeviceDtoCurrent = boolean | null;
+
 export interface NotificationDeviceDto {
-  id?: string;
-  platform?: string;
-  label?: string;
-  mutedAt?: string;
-  createdAt?: string;
-  current?: boolean;
+  id?: NotificationDeviceDtoId;
+  platform?: NotificationDeviceDtoPlatform;
+  label?: NotificationDeviceDtoLabel;
+  mutedAt?: NotificationDeviceDtoMutedAt;
+  createdAt?: NotificationDeviceDtoCreatedAt;
+  current?: NotificationDeviceDtoCurrent;
 }
 
 export interface ClaimHandleRequest {
@@ -237,9 +407,13 @@ export interface SendFriendRequest {
   handle: string;
 }
 
+export type AvatarDtoUrl = string | null;
+
+export type AvatarDtoUpdatedAt = string | null;
+
 export interface AvatarDto {
-  url?: string;
-  updatedAt?: string;
+  url?: AvatarDtoUrl;
+  updatedAt?: AvatarDtoUpdatedAt;
 }
 
 export interface ResetPasswordRequest {
@@ -252,21 +426,47 @@ export interface ResetPasswordRequest {
   password: string;
 }
 
+export type SessionDtoAccessToken = string | null;
+
+export type SessionDtoRefreshToken = string | null;
+
+export type SessionDtoUser = UserDto | null;
+
 export interface SessionDto {
-  accessToken?: string;
-  refreshToken?: string;
-  user?: UserDto;
+  accessToken?: SessionDtoAccessToken;
+  refreshToken?: SessionDtoRefreshToken;
+  user?: SessionDtoUser;
 }
 
+export type UserDtoId = string | null;
+
+export type UserDtoEmail = string | null;
+
+export type UserDtoDisplayName = string | null;
+
+export type UserDtoAvatarUrl = string | null;
+
+export type UserDtoCreatedAt = string | null;
+
+export type UserDtoEmailVerified = boolean | null;
+
+export type UserDtoHasPassword = boolean | null;
+
 export interface UserDto {
-  id?: string;
-  email?: string;
-  displayName?: string;
-  avatarUrl?: string;
-  createdAt?: string;
-  emailVerified?: boolean;
-  hasPassword?: boolean;
+  id?: UserDtoId;
+  email?: UserDtoEmail;
+  displayName?: UserDtoDisplayName;
+  avatarUrl?: UserDtoAvatarUrl;
+  createdAt?: UserDtoCreatedAt;
+  emailVerified?: UserDtoEmailVerified;
+  hasPassword?: UserDtoHasPassword;
 }
+
+/**
+ * @minLength 0
+ * @maxLength 120
+ */
+export type RegisterRequestDisplayName = string | null;
 
 export interface RegisterRequest {
   /**
@@ -283,7 +483,7 @@ export interface RegisterRequest {
    * @minLength 0
    * @maxLength 120
    */
-  displayName?: string;
+  displayName?: RegisterRequestDisplayName;
   acceptedTerms: boolean;
   confirmedAge: boolean;
 }
@@ -293,12 +493,14 @@ export interface OAuthExchangeRequest {
   code: string;
 }
 
+export type LoginRequestRememberMe = boolean | null;
+
 export interface LoginRequest {
   /** @minLength 1 */
   email: string;
   /** @minLength 1 */
   password: string;
-  rememberMe?: boolean;
+  rememberMe?: LoginRequestRememberMe;
 }
 
 export interface ForgotPasswordRequest {
@@ -306,18 +508,30 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
+export type ChangeEmailRequestPassword = string | null;
+
 export interface ChangeEmailRequest {
   /** @minLength 1 */
   email: string;
-  password?: string;
+  password?: ChangeEmailRequestPassword;
 }
 
+export type EmailConfirmationDtoConfirmed = boolean | null;
+
+export type EmailConfirmationDtoSentAt = string | null;
+
+export type EmailConfirmationDtoExpiresAt = string | null;
+
+export type EmailConfirmationDtoRetryAfter = number | null;
+
+export type EmailConfirmationDtoPendingEmail = string | null;
+
 export interface EmailConfirmationDto {
-  confirmed?: boolean;
-  sentAt?: string;
-  expiresAt?: string;
-  retryAfter?: number;
-  pendingEmail?: string;
+  confirmed?: EmailConfirmationDtoConfirmed;
+  sentAt?: EmailConfirmationDtoSentAt;
+  expiresAt?: EmailConfirmationDtoExpiresAt;
+  retryAfter?: EmailConfirmationDtoRetryAfter;
+  pendingEmail?: EmailConfirmationDtoPendingEmail;
 }
 
 export interface CancelEmailChangeRequest {
@@ -352,352 +566,552 @@ export interface UpdateNotificationPreferenceRequest {
   push: boolean;
 }
 
-export type NotificationPreferenceDtoCategory = typeof NotificationPreferenceDtoCategory[keyof typeof NotificationPreferenceDtoCategory];
+export type NotificationPreferenceDtoCategory = 'FRIEND_REQUEST' | 'FRIEND_ACTIVITY' | 'SECURITY' | 'PRODUCT_NEWS' | null;
 
+export type NotificationPreferenceDtoMail = boolean | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const NotificationPreferenceDtoCategory = {
-  FRIEND_REQUEST: 'FRIEND_REQUEST',
-  FRIEND_ACTIVITY: 'FRIEND_ACTIVITY',
-  SECURITY: 'SECURITY',
-  PRODUCT_NEWS: 'PRODUCT_NEWS',
-} as const;
+export type NotificationPreferenceDtoPush = boolean | null;
+
+export type NotificationPreferenceDtoMailLocked = boolean | null;
 
 export interface NotificationPreferenceDto {
   category?: NotificationPreferenceDtoCategory;
-  mail?: boolean;
-  push?: boolean;
-  mailLocked?: boolean;
+  mail?: NotificationPreferenceDtoMail;
+  push?: NotificationPreferenceDtoPush;
+  mailLocked?: NotificationPreferenceDtoMailLocked;
 }
+
+export type NotificationPreferencesDtoCategories = NotificationPreferenceDto[] | null;
+
+export type NotificationPreferencesDtoPushAvailable = boolean | null;
 
 export interface NotificationPreferencesDto {
-  categories?: NotificationPreferenceDto[];
-  pushAvailable?: boolean;
+  categories?: NotificationPreferencesDtoCategories;
+  pushAvailable?: NotificationPreferencesDtoPushAvailable;
 }
 
+export type MuteDeviceRequestMuted = boolean | null;
+
 export interface MuteDeviceRequest {
-  muted?: boolean;
+  muted?: MuteDeviceRequestMuted;
 }
+
+/**
+ * @minLength 0
+ * @maxLength 120
+ */
+export type UpdateProfileRequestDisplayName = string | null;
 
 export interface UpdateProfileRequest {
   /**
    * @minLength 0
    * @maxLength 120
    */
-  displayName?: string;
+  displayName?: UpdateProfileRequestDisplayName;
 }
 
-export type ProfileSummaryDtoRelationship = typeof ProfileSummaryDtoRelationship[keyof typeof ProfileSummaryDtoRelationship];
+export type ProfileSummaryDtoId = string | null;
 
+export type ProfileSummaryDtoHandle = string | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ProfileSummaryDtoRelationship = {
-  ANONYMOUS: 'ANONYMOUS',
-  SELF: 'SELF',
-  NONE: 'NONE',
-  REQUEST_SENT: 'REQUEST_SENT',
-  REQUEST_RECEIVED: 'REQUEST_RECEIVED',
-  FRIENDS: 'FRIENDS',
-} as const;
+export type ProfileSummaryDtoDisplayName = string | null;
+
+export type ProfileSummaryDtoAvatarUrl = string | null;
+
+export type ProfileSummaryDtoCopyCount = number | null;
+
+export type ProfileSummaryDtoRelationship = 'ANONYMOUS' | 'SELF' | 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FRIENDS' | null;
+
+export type ProfileSummaryDtoCollectionPrivate = boolean | null;
 
 export interface ProfileSummaryDto {
-  id?: string;
-  handle?: string;
-  displayName?: string;
-  avatarUrl?: string;
-  copyCount?: number;
+  id?: ProfileSummaryDtoId;
+  handle?: ProfileSummaryDtoHandle;
+  displayName?: ProfileSummaryDtoDisplayName;
+  avatarUrl?: ProfileSummaryDtoAvatarUrl;
+  copyCount?: ProfileSummaryDtoCopyCount;
   relationship?: ProfileSummaryDtoRelationship;
-  collectionPrivate?: boolean;
+  collectionPrivate?: ProfileSummaryDtoCollectionPrivate;
 }
 
-export type ProfileDtoRelationship = typeof ProfileDtoRelationship[keyof typeof ProfileDtoRelationship];
+export type ProfileDtoId = string | null;
 
+export type ProfileDtoHandle = string | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ProfileDtoRelationship = {
-  ANONYMOUS: 'ANONYMOUS',
-  SELF: 'SELF',
-  NONE: 'NONE',
-  REQUEST_SENT: 'REQUEST_SENT',
-  REQUEST_RECEIVED: 'REQUEST_RECEIVED',
-  FRIENDS: 'FRIENDS',
-} as const;
+export type ProfileDtoDisplayName = string | null;
+
+export type ProfileDtoAvatarUrl = string | null;
+
+export type ProfileDtoRelationship = 'ANONYMOUS' | 'SELF' | 'NONE' | 'REQUEST_SENT' | 'REQUEST_RECEIVED' | 'FRIENDS' | null;
+
+export type ProfileDtoPendingRequestId = string | null;
+
+export type ProfileDtoCanSeeCollection = boolean | null;
+
+export type ProfileDtoCanSeeWishlist = boolean | null;
+
+export type ProfileDtoPricesVisible = boolean | null;
+
+export type ProfileDtoCopyCount = number | null;
+
+export type ProfileDtoWishlistCount = number | null;
+
+export type ProfileDtoCollectingSince = string | null;
 
 export interface ProfileDto {
-  id?: string;
-  handle?: string;
-  displayName?: string;
-  avatarUrl?: string;
+  id?: ProfileDtoId;
+  handle?: ProfileDtoHandle;
+  displayName?: ProfileDtoDisplayName;
+  avatarUrl?: ProfileDtoAvatarUrl;
   relationship?: ProfileDtoRelationship;
-  pendingRequestId?: string;
-  canSeeCollection?: boolean;
-  canSeeWishlist?: boolean;
-  pricesVisible?: boolean;
-  copyCount?: number;
-  wishlistCount?: number;
-  collectingSince?: string;
+  pendingRequestId?: ProfileDtoPendingRequestId;
+  canSeeCollection?: ProfileDtoCanSeeCollection;
+  canSeeWishlist?: ProfileDtoCanSeeWishlist;
+  pricesVisible?: ProfileDtoPricesVisible;
+  copyCount?: ProfileDtoCopyCount;
+  wishlistCount?: ProfileDtoWishlistCount;
+  collectingSince?: ProfileDtoCollectingSince;
 }
+
+export type SharedWishDtoId = string | null;
+
+export type SharedWishDtoAlbumId = string | null;
+
+export type SharedWishDtoReleaseId = string | null;
+
+export type SharedWishDtoTitle = string | null;
+
+export type SharedWishDtoArtistName = string | null;
+
+export type SharedWishDtoYear = number | null;
+
+export type SharedWishDtoDesiredFormat = string | null;
+
+export type SharedWishDtoCreatedAt = number | null;
 
 export interface SharedWishDto {
-  id?: string;
-  albumId?: string;
-  releaseId?: string;
-  title?: string;
-  artistName?: string;
-  year?: number;
-  desiredFormat?: string;
-  createdAt?: number;
+  id?: SharedWishDtoId;
+  albumId?: SharedWishDtoAlbumId;
+  releaseId?: SharedWishDtoReleaseId;
+  title?: SharedWishDtoTitle;
+  artistName?: SharedWishDtoArtistName;
+  year?: SharedWishDtoYear;
+  desiredFormat?: SharedWishDtoDesiredFormat;
+  createdAt?: SharedWishDtoCreatedAt;
 }
+
+export type SharedWishlistDtoWishes = SharedWishDto[] | null;
+
+export type SharedWishlistDtoTotal = number | null;
+
+export type SharedWishlistDtoTruncated = boolean | null;
 
 export interface SharedWishlistDto {
-  wishes?: SharedWishDto[];
-  total?: number;
-  truncated?: boolean;
+  wishes?: SharedWishlistDtoWishes;
+  total?: SharedWishlistDtoTotal;
+  truncated?: SharedWishlistDtoTruncated;
 }
+
+export type SharedCollectionDtoCopies = SharedCopyDto[] | null;
+
+export type SharedCollectionDtoTotal = number | null;
+
+export type SharedCollectionDtoTruncated = boolean | null;
 
 export interface SharedCollectionDto {
-  copies?: SharedCopyDto[];
-  total?: number;
-  truncated?: boolean;
+  copies?: SharedCollectionDtoCopies;
+  total?: SharedCollectionDtoTotal;
+  truncated?: SharedCollectionDtoTruncated;
 }
 
-export type SharedCopyDtoFormat = typeof SharedCopyDtoFormat[keyof typeof SharedCopyDtoFormat];
+export type SharedCopyDtoId = string | null;
 
+export type SharedCopyDtoReleaseId = string | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const SharedCopyDtoFormat = {
-  VINYL: 'VINYL',
-  CD: 'CD',
-  CASSETTE: 'CASSETTE',
-  DIGITAL: 'DIGITAL',
-  OTHER: 'OTHER',
-} as const;
+export type SharedCopyDtoTitle = string | null;
+
+export type SharedCopyDtoArtistName = string | null;
+
+export type SharedCopyDtoYear = number | null;
+
+export type SharedCopyDtoFormat = 'VINYL' | 'CD' | 'CASSETTE' | 'DIGITAL' | 'OTHER' | null;
+
+export type SharedCopyDtoCoverArtUrl = string | null;
+
+export type SharedCopyDtoPreviewPhotoId = string | null;
+
+export type SharedCopyDtoCoverTheme = CoverThemeDto | null;
+
+export type SharedCopyDtoCondition = string | null;
+
+export type SharedCopyDtoSleeveCondition = string | null;
+
+export type SharedCopyDtoPricePaidCents = number | null;
+
+export type SharedCopyDtoCurrency = string | null;
+
+export type SharedCopyDtoCreatedAt = number | null;
 
 export interface SharedCopyDto {
-  id?: string;
-  releaseId?: string;
-  title?: string;
-  artistName?: string;
-  year?: number;
+  id?: SharedCopyDtoId;
+  releaseId?: SharedCopyDtoReleaseId;
+  title?: SharedCopyDtoTitle;
+  artistName?: SharedCopyDtoArtistName;
+  year?: SharedCopyDtoYear;
   format?: SharedCopyDtoFormat;
-  coverArtUrl?: string;
-  previewPhotoId?: string;
-  coverTheme?: CoverThemeDto;
-  condition?: string;
-  sleeveCondition?: string;
-  pricePaidCents?: number;
-  currency?: string;
-  createdAt?: number;
+  coverArtUrl?: SharedCopyDtoCoverArtUrl;
+  previewPhotoId?: SharedCopyDtoPreviewPhotoId;
+  coverTheme?: SharedCopyDtoCoverTheme;
+  condition?: SharedCopyDtoCondition;
+  sleeveCondition?: SharedCopyDtoSleeveCondition;
+  pricePaidCents?: SharedCopyDtoPricePaidCents;
+  currency?: SharedCopyDtoCurrency;
+  createdAt?: SharedCopyDtoCreatedAt;
 }
+
+export type TrackDtoNumber = string | null;
+
+export type TrackDtoTitle = string | null;
+
+export type TrackDtoLengthMs = number | null;
+
+export type TrackDtoArtistName = string | null;
 
 export interface TrackDto {
-  number?: string;
-  title?: string;
-  lengthMs?: number;
-  artistName?: string;
+  number?: TrackDtoNumber;
+  title?: TrackDtoTitle;
+  lengthMs?: TrackDtoLengthMs;
+  artistName?: TrackDtoArtistName;
 }
+
+export type TrackMediumDtoPosition = number | null;
+
+export type TrackMediumDtoFormat = string | null;
+
+export type TrackMediumDtoTitle = string | null;
+
+export type TrackMediumDtoTracks = TrackDto[] | null;
 
 export interface TrackMediumDto {
-  position?: number;
-  format?: string;
-  title?: string;
-  tracks?: TrackDto[];
+  position?: TrackMediumDtoPosition;
+  format?: TrackMediumDtoFormat;
+  title?: TrackMediumDtoTitle;
+  tracks?: TrackMediumDtoTracks;
 }
 
-export type TracklistDtoUnavailableReason = typeof TracklistDtoUnavailableReason[keyof typeof TracklistDtoUnavailableReason];
+export type TracklistDtoReleaseId = string | null;
 
+export type TracklistDtoTrackCount = number | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const TracklistDtoUnavailableReason = {
-  DISCOGS: 'DISCOGS',
-  NOT_IN_CATALOGUE: 'NOT_IN_CATALOGUE',
-} as const;
+export type TracklistDtoDiscCount = number | null;
+
+export type TracklistDtoMedia = TrackMediumDto[] | null;
+
+export type TracklistDtoUnavailableReason = 'DISCOGS' | 'NOT_IN_CATALOGUE' | null;
 
 export interface TracklistDto {
-  releaseId?: string;
-  trackCount?: number;
-  discCount?: number;
-  media?: TrackMediumDto[];
+  releaseId?: TracklistDtoReleaseId;
+  trackCount?: TracklistDtoTrackCount;
+  discCount?: TracklistDtoDiscCount;
+  media?: TracklistDtoMedia;
   unavailableReason?: TracklistDtoUnavailableReason;
 }
 
+export type ArtistDtoMbid = string | null;
+
+export type ArtistDtoName = string | null;
+
+export type ArtistDtoDisambiguation = string | null;
+
+export type ArtistDtoType = string | null;
+
+export type ArtistDtoCountry = string | null;
+
+export type ArtistDtoBeganIn = string | null;
+
+export type ArtistDtoEndedIn = string | null;
+
+export type ArtistDtoScore = number | null;
+
 export interface ArtistDto {
-  mbid?: string;
-  name?: string;
-  disambiguation?: string;
-  type?: string;
-  country?: string;
-  beganIn?: string;
-  endedIn?: string;
-  score?: number;
+  mbid?: ArtistDtoMbid;
+  name?: ArtistDtoName;
+  disambiguation?: ArtistDtoDisambiguation;
+  type?: ArtistDtoType;
+  country?: ArtistDtoCountry;
+  beganIn?: ArtistDtoBeganIn;
+  endedIn?: ArtistDtoEndedIn;
+  score?: ArtistDtoScore;
 }
+
+export type ArtistImageDtoImageUrl = string | null;
 
 export interface ArtistImageDto {
-  imageUrl?: string;
+  imageUrl?: ArtistImageDtoImageUrl;
 }
+
+export type AlbumDtoAlbumId = string | null;
+
+export type AlbumDtoTitle = string | null;
+
+export type AlbumDtoArtistName = string | null;
+
+export type AlbumDtoYear = number | null;
+
+export type AlbumDtoPrimaryType = string | null;
+
+export type AlbumDtoCoverArtUrl = string | null;
 
 export interface AlbumDto {
-  albumId?: string;
-  title?: string;
-  artistName?: string;
-  year?: number;
-  primaryType?: string;
-  coverArtUrl?: string;
+  albumId?: AlbumDtoAlbumId;
+  title?: AlbumDtoTitle;
+  artistName?: AlbumDtoArtistName;
+  year?: AlbumDtoYear;
+  primaryType?: AlbumDtoPrimaryType;
+  coverArtUrl?: AlbumDtoCoverArtUrl;
 }
+
+export type DiscographyDtoAlbums = AlbumDto[] | null;
+
+export type DiscographyDtoTotal = number | null;
 
 export interface DiscographyDto {
-  albums?: AlbumDto[];
-  total?: number;
+  albums?: DiscographyDtoAlbums;
+  total?: DiscographyDtoTotal;
 }
+
+export type AlbumCoverDtoAlbumId = string | null;
+
+export type AlbumCoverDtoCoverArtUrl = string | null;
 
 export interface AlbumCoverDto {
-  albumId?: string;
-  coverArtUrl?: string;
+  albumId?: AlbumCoverDtoAlbumId;
+  coverArtUrl?: AlbumCoverDtoCoverArtUrl;
 }
+
+export type HealthDtoStatus = string | null;
+
+export type HealthDtoVersion = string | null;
+
+export type HealthDtoBuiltAt = string | null;
+
+export type HealthDtoTime = string | null;
 
 export interface HealthDto {
-  status?: string;
-  version?: string;
-  builtAt?: string;
-  time?: string;
+  status?: HealthDtoStatus;
+  version?: HealthDtoVersion;
+  builtAt?: HealthDtoBuiltAt;
+  time?: HealthDtoTime;
 }
 
-export type HandleAvailabilityDtoReason = typeof HandleAvailabilityDtoReason[keyof typeof HandleAvailabilityDtoReason];
+export type HandleAvailabilityDtoHandle = string | null;
 
+export type HandleAvailabilityDtoAvailable = boolean | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const HandleAvailabilityDtoReason = {
-  OK: 'OK',
-  MALFORMED: 'MALFORMED',
-  TAKEN: 'TAKEN',
-  RESERVED: 'RESERVED',
-} as const;
+export type HandleAvailabilityDtoReason = 'OK' | 'MALFORMED' | 'TAKEN' | 'RESERVED' | null;
 
 export interface HandleAvailabilityDto {
-  handle?: string;
-  available?: boolean;
+  handle?: HandleAvailabilityDtoHandle;
+  available?: HandleAvailabilityDtoAvailable;
   reason?: HandleAvailabilityDtoReason;
 }
 
+export type FriendRequestDtoId = string | null;
+
+export type FriendRequestDtoFrom = ProfileSummaryDto | null;
+
+export type FriendRequestDtoCreatedAt = string | null;
+
+export type FriendRequestDtoMutualFriends = number | null;
+
 export interface FriendRequestDto {
-  id?: string;
-  from?: ProfileSummaryDto;
-  createdAt?: string;
-  mutualFriends?: number;
+  id?: FriendRequestDtoId;
+  from?: FriendRequestDtoFrom;
+  createdAt?: FriendRequestDtoCreatedAt;
+  mutualFriends?: FriendRequestDtoMutualFriends;
 }
+
+export type FriendsOverviewDtoFriends = ProfileSummaryDto[] | null;
+
+export type FriendsOverviewDtoIncoming = FriendRequestDto[] | null;
+
+export type FriendsOverviewDtoOutgoing = ProfileSummaryDto[] | null;
 
 export interface FriendsOverviewDto {
-  friends?: ProfileSummaryDto[];
-  incoming?: FriendRequestDto[];
-  outgoing?: ProfileSummaryDto[];
+  friends?: FriendsOverviewDtoFriends;
+  incoming?: FriendsOverviewDtoIncoming;
+  outgoing?: FriendsOverviewDtoOutgoing;
 }
+
+export type ActivityActorDtoId = string | null;
+
+export type ActivityActorDtoHandle = string | null;
+
+export type ActivityActorDtoDisplayName = string | null;
+
+export type ActivityActorDtoAvatarUrl = string | null;
 
 export interface ActivityActorDto {
-  id?: string;
-  handle?: string;
-  displayName?: string;
-  avatarUrl?: string;
+  id?: ActivityActorDtoId;
+  handle?: ActivityActorDtoHandle;
+  displayName?: ActivityActorDtoDisplayName;
+  avatarUrl?: ActivityActorDtoAvatarUrl;
 }
 
-export type ActivityEntryDtoType = typeof ActivityEntryDtoType[keyof typeof ActivityEntryDtoType];
+export type ActivityEntryDtoId = string | null;
 
+export type ActivityEntryDtoType = 'COPY_ADDED' | 'WISH_ADDED' | 'WISH_FULFILLED' | 'FRIENDSHIP_ACCEPTED' | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ActivityEntryDtoType = {
-  COPY_ADDED: 'COPY_ADDED',
-  WISH_ADDED: 'WISH_ADDED',
-  WISH_FULFILLED: 'WISH_FULFILLED',
-  FRIENDSHIP_ACCEPTED: 'FRIENDSHIP_ACCEPTED',
-} as const;
+export type ActivityEntryDtoActor = ActivityActorDto | null;
 
-export type ActivityEntryDtoFormat = typeof ActivityEntryDtoFormat[keyof typeof ActivityEntryDtoFormat];
+export type ActivityEntryDtoTitle = string | null;
 
+export type ActivityEntryDtoArtistName = string | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ActivityEntryDtoFormat = {
-  VINYL: 'VINYL',
-  CD: 'CD',
-  CASSETTE: 'CASSETTE',
-  DIGITAL: 'DIGITAL',
-  OTHER: 'OTHER',
-} as const;
+export type ActivityEntryDtoReleaseId = string | null;
+
+export type ActivityEntryDtoFormat = 'VINYL' | 'CD' | 'CASSETTE' | 'DIGITAL' | 'OTHER' | null;
+
+export type ActivityEntryDtoYear = number | null;
+
+export type ActivityEntryDtoCoverArtUrl = string | null;
+
+export type ActivityEntryDtoOccurredAt = string | null;
+
+export type ActivityEntryDtoCopyCount = number | null;
+
+export type ActivityEntryDtoCollapsedCovers = string[] | null;
+
+export type ActivityEntryDtoByViewer = boolean | null;
 
 export interface ActivityEntryDto {
-  id?: string;
+  id?: ActivityEntryDtoId;
   type?: ActivityEntryDtoType;
-  actor?: ActivityActorDto;
-  title?: string;
-  artistName?: string;
-  releaseId?: string;
+  actor?: ActivityEntryDtoActor;
+  title?: ActivityEntryDtoTitle;
+  artistName?: ActivityEntryDtoArtistName;
+  releaseId?: ActivityEntryDtoReleaseId;
   format?: ActivityEntryDtoFormat;
-  year?: number;
-  coverArtUrl?: string;
-  occurredAt?: string;
-  copyCount?: number;
-  collapsedCovers?: string[];
-  byViewer?: boolean;
+  year?: ActivityEntryDtoYear;
+  coverArtUrl?: ActivityEntryDtoCoverArtUrl;
+  occurredAt?: ActivityEntryDtoOccurredAt;
+  copyCount?: ActivityEntryDtoCopyCount;
+  collapsedCovers?: ActivityEntryDtoCollapsedCovers;
+  byViewer?: ActivityEntryDtoByViewer;
 }
+
+export type ActivityFeedDtoEntries = ActivityEntryDto[] | null;
 
 export interface ActivityFeedDto {
-  entries?: ActivityEntryDto[];
+  entries?: ActivityFeedDtoEntries;
 }
+
+export type AuthProviderDtoId = string | null;
+
+export type AuthProviderDtoDisplayName = string | null;
 
 export interface AuthProviderDto {
-  id?: string;
-  displayName?: string;
+  id?: AuthProviderDtoId;
+  displayName?: AuthProviderDtoDisplayName;
 }
+
+export type StorageUsageDtoPhotoBytes = number | null;
+
+export type StorageUsageDtoPhotoCount = number | null;
+
+export type StorageUsageDtoAvatarBytes = number | null;
+
+export type StorageUsageDtoUsedBytes = number | null;
+
+export type StorageUsageDtoQuotaBytes = number | null;
 
 export interface StorageUsageDto {
-  photoBytes?: number;
-  photoCount?: number;
-  avatarBytes?: number;
-  usedBytes?: number;
-  quotaBytes?: number;
+  photoBytes?: StorageUsageDtoPhotoBytes;
+  photoCount?: StorageUsageDtoPhotoCount;
+  avatarBytes?: StorageUsageDtoAvatarBytes;
+  usedBytes?: StorageUsageDtoUsedBytes;
+  quotaBytes?: StorageUsageDtoQuotaBytes;
 }
+
+export type AccountDtoId = string | null;
+
+export type AccountDtoEmail = string | null;
+
+export type AccountDtoDisplayName = string | null;
+
+export type AccountDtoHandle = string | null;
+
+export type AccountDtoAvatarUrl = string | null;
+
+export type AccountDtoCreatedAt = string | null;
 
 export interface AccountDto {
-  id?: string;
-  email?: string;
-  displayName?: string;
-  handle?: string;
-  avatarUrl?: string;
-  createdAt?: string;
+  id?: AccountDtoId;
+  email?: AccountDtoEmail;
+  displayName?: AccountDtoDisplayName;
+  handle?: AccountDtoHandle;
+  avatarUrl?: AccountDtoAvatarUrl;
+  createdAt?: AccountDtoCreatedAt;
 }
+
+export type AccountExportDtoExportedAt = string | null;
+
+export type AccountExportDtoAccount = AccountDto | null;
+
+export type AccountExportDtoConsents = ConsentDto[] | null;
+
+export type AccountExportDtoSharing = SharingSettingsDto | null;
+
+export type AccountExportDtoNotifications = NotificationPreferenceDto[] | null;
+
+export type AccountExportDtoCopies = SyncCopyDto[] | null;
+
+export type AccountExportDtoWishes = SyncWishDto[] | null;
+
+export type AccountExportDtoPhotos = SyncPhotoDto[] | null;
+
+export type AccountExportDtoFriends = FriendExportDto[] | null;
+
+export type AccountExportDtoProviders = string[] | null;
 
 export interface AccountExportDto {
-  exportedAt?: string;
-  account?: AccountDto;
-  consents?: ConsentDto[];
-  sharing?: SharingSettingsDto;
-  notifications?: NotificationPreferenceDto[];
-  copies?: SyncCopyDto[];
-  wishes?: SyncWishDto[];
-  photos?: SyncPhotoDto[];
-  friends?: FriendExportDto[];
-  providers?: string[];
+  exportedAt?: AccountExportDtoExportedAt;
+  account?: AccountExportDtoAccount;
+  consents?: AccountExportDtoConsents;
+  sharing?: AccountExportDtoSharing;
+  notifications?: AccountExportDtoNotifications;
+  copies?: AccountExportDtoCopies;
+  wishes?: AccountExportDtoWishes;
+  photos?: AccountExportDtoPhotos;
+  friends?: AccountExportDtoFriends;
+  providers?: AccountExportDtoProviders;
 }
 
-export type ConsentDtoDocument = typeof ConsentDtoDocument[keyof typeof ConsentDtoDocument];
+export type ConsentDtoDocument = 'TERMS' | 'PRIVACY' | 'AGE' | null;
 
+export type ConsentDtoVersion = string | null;
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const ConsentDtoDocument = {
-  TERMS: 'TERMS',
-  PRIVACY: 'PRIVACY',
-  AGE: 'AGE',
-} as const;
+export type ConsentDtoAcceptedAt = string | null;
 
 export interface ConsentDto {
   document?: ConsentDtoDocument;
-  version?: string;
-  acceptedAt?: string;
+  version?: ConsentDtoVersion;
+  acceptedAt?: ConsentDtoAcceptedAt;
 }
 
+export type FriendExportDtoHandle = string | null;
+
+export type FriendExportDtoDisplayName = string | null;
+
+export type FriendExportDtoStatus = string | null;
+
+export type FriendExportDtoSince = string | null;
+
 export interface FriendExportDto {
-  handle?: string;
-  displayName?: string;
-  status?: string;
-  since?: string;
+  handle?: FriendExportDtoHandle;
+  displayName?: FriendExportDtoDisplayName;
+  status?: FriendExportDtoStatus;
+  since?: FriendExportDtoSince;
 }
 
 export type PullParams = {

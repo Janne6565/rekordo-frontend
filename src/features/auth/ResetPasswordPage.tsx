@@ -29,7 +29,7 @@ export function ResetPasswordPage() {
       return resetPassword({ token, password });
     },
     onSuccess: (session) => {
-      if (session?.accessToken === undefined || session.user === undefined) return;
+      if (session?.accessToken == null || session.user == null) return;
       // Redeeming signs you straight in — having just proved you control the address,
       // being asked to type the new password again would be pure ceremony.
       setAccessToken(session.accessToken);

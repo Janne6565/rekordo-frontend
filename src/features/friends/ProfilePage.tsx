@@ -268,15 +268,15 @@ function copyDetail(
   prices: boolean,
 ): SharedDetailItem {
   const facts: DetailFact[] = [];
-  const push = (key: string, label: string, value: string | undefined, chip?: boolean) => {
-    if (value !== undefined && value !== "") facts.push({ key, label, value, chip });
+  const push = (key: string, label: string, value: string | null | undefined, chip?: boolean) => {
+    if (value != null && value !== "") facts.push({ key, label, value, chip });
   };
 
   push("year", t("profile.detail.year"), copy?.year?.toString());
   push(
     "format",
     t("profile.detail.format"),
-    copy?.format === undefined ? undefined : FORMAT_LABELS[copy.format],
+    copy?.format == null ? undefined : FORMAT_LABELS[copy.format],
   );
   push("media", t("profile.detail.media"), conditionCode(copy?.condition), true);
   push("sleeve", t("profile.detail.sleeve"), conditionCode(copy?.sleeveCondition), true);
@@ -293,7 +293,7 @@ function copyDetail(
   // 23e: two columns hold four cells at 390px, so the conditions share a line and the date
   // moves under the rule into the footer.
   const conditions = [conditionCode(copy?.condition), conditionCode(copy?.sleeveCondition)]
-    .filter((code) => code !== undefined)
+    .filter((code) => code != null)
     .join(" · ");
   const phoneFacts = facts.filter((fact) => !["media", "sleeve", "added"].includes(fact.key));
   if (conditions !== "")
@@ -309,9 +309,9 @@ function copyDetail(
     artistName: copy?.artistName ?? "",
     art: (
       <ReleaseArt
-        release={{ coverArtUrl: copy?.coverArtUrl ?? null, format: copy?.format }}
-        format={copy?.format}
-        previewSrc={copy?.id === undefined ? null : (photos.get(copy.id) ?? null)}
+        release={{ coverArtUrl: copy?.coverArtUrl ?? null, format: copy?.format ?? undefined }}
+        format={copy?.format ?? undefined}
+        previewSrc={copy?.id == null ? null : (photos.get(copy.id) ?? null)}
         variant="bleed"
         loading="eager"
       />
@@ -351,7 +351,7 @@ function wishDetail(
     art: (
       <ReleaseArt
         release={{
-          coverArtUrl: wish?.albumId === undefined ? null : (covers.get(wish.albumId) ?? null),
+          coverArtUrl: wish?.albumId == null ? null : (covers.get(wish.albumId) ?? null),
         }}
         format={wish === undefined ? "OTHER" : wishFormat(wish)}
         variant="bleed"
@@ -373,8 +373,8 @@ function wishDetail(
  * Checked rather than cast, for the same reason `wishFormat` is: a grade these clients do
  * not know must leave the field out instead of printing `undefined` in a chip.
  */
-function conditionCode(condition: string | undefined): string | undefined {
-  return condition !== undefined && condition in CONDITION_SHORT
+function conditionCode(condition: string | null | undefined): string | undefined {
+  return condition != null && condition in CONDITION_SHORT
     ? CONDITION_SHORT[condition as Condition]
     : undefined;
 }
@@ -511,7 +511,7 @@ function RelationshipAction({ logic, block }: { readonly logic: Logic; readonly 
      */
     case "REQUEST_RECEIVED": {
       const requestId = person?.pendingRequestId;
-      if (requestId === undefined) return null;
+      if (requestId == null) return null;
       const busy = logic.acceptRequest.isPending || logic.declineRequest.isPending;
       return (
         <div
@@ -577,8 +577,8 @@ function CollectionGrid({
           <button
             key={copy.id}
             type="button"
-            disabled={copy.id === undefined}
-            onClick={() => copy.id !== undefined && onOpen(copy.id)}
+            disabled={copy.id == null}
+            onClick={() => copy.id != null && onOpen(copy.id)}
             className={cn(
               "group -m-2 block w-full cursor-pointer rounded-xl p-2 text-left",
               "transition-colors duration-(--mc-quick) hover:bg-surface focus-visible:outline-none",
@@ -596,9 +596,12 @@ function CollectionGrid({
               )}
             >
               <ReleaseArt
-                release={{ coverArtUrl: copy.coverArtUrl ?? null, format: copy.format }}
-                format={copy.format}
-                previewSrc={copy.id === undefined ? null : (photos.get(copy.id) ?? null)}
+                release={{
+                  coverArtUrl: copy.coverArtUrl ?? null,
+                  format: copy.format ?? undefined,
+                }}
+                format={copy.format ?? undefined}
+                previewSrc={copy.id == null ? null : (photos.get(copy.id) ?? null)}
                 loading="lazy"
               />
             </div>
@@ -648,8 +651,8 @@ function WishRows({
         <li key={wish.id} className="odd:bg-surface rounded-lg">
           <button
             type="button"
-            disabled={wish.id === undefined}
-            onClick={() => wish.id !== undefined && onOpen(wish.id)}
+            disabled={wish.id == null}
+            onClick={() => wish.id != null && onOpen(wish.id)}
             className={cn(
               "group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left",
               "transition-colors duration-(--mc-quick) hover:bg-ink/5",
@@ -662,8 +665,7 @@ function WishRows({
             <div className="h-11 w-[53px] flex-none">
               <ReleaseArt
                 release={{
-                  coverArtUrl:
-                    wish.albumId === undefined ? null : (covers.get(wish.albumId) ?? null),
+                  coverArtUrl: wish.albumId == null ? null : (covers.get(wish.albumId) ?? null),
                 }}
                 format={wishFormat(wish)}
                 loading="lazy"

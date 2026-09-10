@@ -44,7 +44,7 @@ export function SessionBootstrap({ children }: { readonly children: ReactNode })
     void (async () => {
       try {
         const session = await refresh();
-        if (session.accessToken === undefined || session.user === undefined) {
+        if (session.accessToken == null || session.user == null) {
           dispatch(signedOut());
           return;
         }

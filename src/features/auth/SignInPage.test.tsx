@@ -17,7 +17,28 @@ vi.mock("@/features/auth/useAuthLogic", () => ({ useAuthLogic: mocked.logic }));
 
 type Auth = { status: string; firstSyncPending: boolean };
 
-function page(auth: Auth, search: Record<string, unknown> = {}) {
+/**
+ * The bot check as this page sees it. Off by default, which is how it looks against a
+ * server with no keys configured: nothing drawn, nothing to solve, nothing gated.
+ */
+function challenge(overrides: Record<string, unknown> = {}) {
+  return {
+    container: vi.fn(),
+    action: "login",
+    required: false,
+    satisfied: true,
+    token: null,
+    reset: vi.fn(),
+    failed: false,
+    ...overrides,
+  };
+}
+
+function page(
+  auth: Auth,
+  search: Record<string, unknown> = {},
+  logic: Record<string, unknown> = {},
+) {
   mocked.search.mockReturnValue(search);
   mocked.logic.mockReturnValue({
     auth: { ...auth, user: null },
@@ -36,12 +57,14 @@ function page(auth: Auth, search: Record<string, unknown> = {}) {
     ageConfirmed: false,
     setAgeConfirmed: vi.fn(),
     availableProviders: [],
+    challenge: challenge(),
     canSubmit: false,
     submit: vi.fn(),
     submitting: false,
     failed: [],
     signOut: vi.fn(),
     signingOut: false,
+    ...logic,
   } as unknown as ReturnType<typeof useAuthLogic>);
   render(<SignInPage />);
 }
@@ -78,5 +101,40 @@ describe("the sign-in page when there is nothing to sign in to", () => {
 
     expect(mocked.navigate).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { name: /Welcome back|Sign in/i })).toBeDefined();
+  });
+
+  /*
+   * The bot check. These exist because the four cases above went on passing while the page
+   * had stopped rendering at all: the mock is cast, so a field the page newly reads is a
+   * runtime failure rather than a type error.
+   */
+
+  it("draws no widget, and no error, when the server has no check configured", () => {
+    page({ status: "anonymous", firstSyncPending: false });
+
+    expect(screen.queryByText(/check could not be loaded/i)).toBeNull();
+    expect(screen.getByRole("button", { name: /Sign in/i })).toBeDefined();
+  });
+
+  it("says so when the widget could not be loaded", () => {
+    // A blocker or a strict network. Nothing is visible where the check should be, so the
+    // only alternative to saying this is a form that fails for no stated reason.
+    page(
+      { status: "anonymous", firstSyncPending: false },
+      {},
+      { challenge: challenge({ required: true, failed: true }) },
+    );
+
+    expect(screen.getByText(/check could not be loaded/i)).toBeDefined();
+  });
+
+  it("holds the submit while the check is required and unsolved", () => {
+    page(
+      { status: "anonymous", firstSyncPending: false },
+      {},
+      { challenge: challenge({ required: true, satisfied: false }), canSubmit: false },
+    );
+
+    expect(screen.getByRole("button", { name: /Sign in/i }).hasAttribute("disabled")).toBe(true);
   });
 });

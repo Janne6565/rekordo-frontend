@@ -468,6 +468,8 @@ export interface UserDto {
  */
 export type RegisterRequestDisplayName = string | null;
 
+export type RegisterRequestTurnstileToken = string | null;
+
 export interface RegisterRequest {
   /**
    * @minLength 0
@@ -486,6 +488,7 @@ export interface RegisterRequest {
   displayName?: RegisterRequestDisplayName;
   acceptedTerms: boolean;
   confirmedAge: boolean;
+  turnstileToken?: RegisterRequestTurnstileToken;
 }
 
 export interface OAuthExchangeRequest {
@@ -495,17 +498,23 @@ export interface OAuthExchangeRequest {
 
 export type LoginRequestRememberMe = boolean | null;
 
+export type LoginRequestTurnstileToken = string | null;
+
 export interface LoginRequest {
   /** @minLength 1 */
   email: string;
   /** @minLength 1 */
   password: string;
   rememberMe?: LoginRequestRememberMe;
+  turnstileToken?: LoginRequestTurnstileToken;
 }
+
+export type ForgotPasswordRequestTurnstileToken = string | null;
 
 export interface ForgotPasswordRequest {
   /** @minLength 1 */
   email: string;
+  turnstileToken?: ForgotPasswordRequestTurnstileToken;
 }
 
 export type ChangeEmailRequestPassword = string | null;
@@ -544,9 +553,12 @@ export interface ConfirmEmailRequest {
   token: string;
 }
 
+export type RequestEmailConfirmationRequestTurnstileToken = string | null;
+
 export interface RequestEmailConfirmationRequest {
   /** @minLength 1 */
   email: string;
+  turnstileToken?: RequestEmailConfirmationRequestTurnstileToken;
 }
 
 export type UpdateNotificationPreferenceRequestCategory = typeof UpdateNotificationPreferenceRequestCategory[keyof typeof UpdateNotificationPreferenceRequestCategory];
@@ -1013,6 +1025,12 @@ export type AuthProviderDtoDisplayName = string | null;
 export interface AuthProviderDto {
   id?: AuthProviderDtoId;
   displayName?: AuthProviderDtoDisplayName;
+}
+
+export type ChallengeDtoSiteKey = string | null;
+
+export interface ChallengeDto {
+  siteKey?: ChallengeDtoSiteKey;
 }
 
 export type StorageUsageDtoPhotoBytes = number | null;

@@ -787,12 +787,15 @@ const enCommon = {
     signOutEverywhereBody: "Ends the session on every device, this one included.",
     signOutEverywhereFailed:
       "That did not reach the server. This browser is signed out; the other devices may not be.",
+    challengeUnavailable:
+      "The check could not be loaded. A blocker or a strict network is the usual reason.",
     error: {
       badCredentials: "That e-mail address and password do not match.",
       emailTaken: "That e-mail address is already registered.",
       invalidEmail: "That does not look like an e-mail address.",
       passwordTooShort: "Your password needs at least ten characters.",
       consentRequired: "Both boxes have to be ticked to create an account.",
+      challengeFailed: "The check above did not go through. Try it once more.",
       generic: "Something went wrong. Try again in a moment.",
     },
   },
@@ -2106,12 +2109,15 @@ const deCommon: CommonSchema = {
     signOutEverywhereBody: "Beendet die Sitzung auf jedem Gerät, dieses eingeschlossen.",
     signOutEverywhereFailed:
       "Das hat den Server nicht erreicht. Dieser Browser ist abgemeldet, die anderen Geräte vielleicht nicht.",
+    challengeUnavailable:
+      "Die Prüfung konnte nicht geladen werden. Meist liegt es an einem Blocker oder einem strengen Netzwerk.",
     error: {
       badCredentials: "E-Mail-Adresse und Passwort passen nicht zusammen.",
       emailTaken: "Diese E-Mail-Adresse ist bereits registriert.",
       invalidEmail: "Das sieht nicht nach einer E-Mail-Adresse aus.",
       passwordTooShort: "Dein Passwort braucht mindestens zehn Zeichen.",
       consentRequired: "Beide Häkchen sind nötig, um ein Konto zu erstellen.",
+      challengeFailed: "Die Prüfung oben ist nicht durchgegangen. Versuch sie noch einmal.",
       generic: "Da ist etwas schiefgegangen. Versuche es gleich noch einmal.",
     },
   },

@@ -15,6 +15,7 @@ import type {
   CallbackParams,
   CallbackPostedParams,
   CancelEmailChangeRequest,
+  ChallengeDto,
   ChangeEmailRequest,
   ConfirmEmailRequest,
   EmailConfirmationDto,
@@ -321,6 +322,18 @@ export const authorize = (
     },
       );
     }
+  /**
+ * Open, because it is asked before anybody has signed in, and public: the site key it returns is rendered into the widget's markup anyway. Asked for rather than built into the client because one frontend image serves both staging and production, and a shipped phone binary cannot be reconfigured at all. A null site key means the check is off and no token will be required.
+ * @summary What a client needs to draw the bot check
+ */
+export const challenge = (
+    
+ ) => {
+      return customInstance<ChallengeDto>(
+      {url: `/api/v1/auth/challenge`, method: 'GET'
+    },
+      );
+    }
   export type ResetPasswordResult = NonNullable<Awaited<ReturnType<typeof resetPassword>>>
 export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
 export type RefreshResult = NonNullable<Awaited<ReturnType<typeof refresh>>>
@@ -343,3 +356,4 @@ export type DeleteAccountResult = NonNullable<Awaited<ReturnType<typeof deleteAc
 export type UpdateProfileResult = NonNullable<Awaited<ReturnType<typeof updateProfile>>>
 export type ProvidersResult = NonNullable<Awaited<ReturnType<typeof providers>>>
 export type AuthorizeResult = NonNullable<Awaited<ReturnType<typeof authorize>>>
+export type ChallengeResult = NonNullable<Awaited<ReturnType<typeof challenge>>>

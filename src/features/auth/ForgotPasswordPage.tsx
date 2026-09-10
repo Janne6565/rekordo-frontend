@@ -1,7 +1,9 @@
 import { forgotPassword } from "@/api/generated/auth/auth";
 import { Button } from "@/components/ui";
 import { AuthBrandPanel } from "@/features/auth/AuthBrandPanel";
+import { ChallengeField } from "@/features/auth/ChallengeField";
 import { TextField } from "@/features/auth/SignInPage";
+import { useChallenge } from "@/features/auth/useChallenge";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
@@ -11,11 +13,32 @@ import { useTranslation } from "react-i18next";
 export function ForgotPasswordPage() {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
+  /*
+   * This endpoint sends mail to an address the caller typed, which is the one here worth a
+   * bot check most: unprotected it is a way to post somebody else's inbox a reset link
+   * repeatedly from any script.
+   */
+  const challenge = useChallenge("forgot-password");
 
   const request = useMutation({
-    // Errors are swallowed on purpose: a failure that looked different for a registered
-    // address would turn this screen into a way to find out who has an account.
-    mutationFn: async () => forgotPassword({ email: email.trim() }).catch(() => undefined),
+    /*
+     * Errors are swallowed on purpose: a failure that looked different for a registered
+     * address would turn this screen into a way to find out who has an account.
+     *
+     * A refused bot check is the one exception, and has to be. It says nothing about the
+     * address -- the endpoint answers the same for one with an account and one without --
+     * but swallowing it would show somebody "a link is on its way" when no mail was sent,
+     * and they would sit waiting for it.
+     */
+    mutationFn: async () =>
+      forgotPassword({ email: email.trim(), turnstileToken: challenge.token }).catch(
+        (error: unknown) => {
+          if ((error as { response?: { status?: number } }).response?.status === 403) throw error;
+          return undefined;
+        },
+      ),
+    // A token is spent by the attempt whether or not it was accepted.
+    onSettled: () => challenge.reset(),
   });
 
   return (
@@ -50,10 +73,16 @@ export function ForgotPasswordPage() {
                 autoComplete="email"
                 placeholder={t("auth.emailPlaceholder")}
               />
+              <ChallengeField challenge={challenge} />
+              {request.isError && (
+                <p role="alert" className="text-sm text-accent">
+                  {t("auth.error.challengeFailed")}
+                </p>
+              )}
               <Button
                 type="submit"
                 loading={request.isPending}
-                disabled={email.trim().length === 0}
+                disabled={email.trim().length === 0 || !challenge.satisfied}
                 className="h-[46px] rounded-[9px]"
               >
                 {t("auth.forgotSubmit")}

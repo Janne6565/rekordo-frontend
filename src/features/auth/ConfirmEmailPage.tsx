@@ -4,7 +4,9 @@ import {
   resendEmailConfirmation,
 } from "@/api/generated/auth/auth";
 import { Button, buttonClassName } from "@/components/ui";
+import { ChallengeField } from "@/features/auth/ChallengeField";
 import { looksTruncated, maskAddress } from "@/features/auth/confirmToken";
+import { useChallenge } from "@/features/auth/useChallenge";
 import { Route } from "@/routes/confirm.$token";
 import { accountChanged } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -139,7 +141,13 @@ function ResendForOwner() {
 function AskForAnother() {
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
-  const send = useMutation({ mutationFn: async () => requestEmailConfirmation({ email }) });
+  // Mail to an address the caller typed, from a page nobody has to be signed in to reach.
+  const challenge = useChallenge("request-email-confirmation");
+  const send = useMutation({
+    mutationFn: async () => requestEmailConfirmation({ email, turnstileToken: challenge.token }),
+    // A token is spent by the attempt whether or not it was accepted.
+    onSettled: () => challenge.reset(),
+  });
 
   if (send.isSuccess) {
     return (
@@ -156,6 +164,14 @@ function AskForAnother() {
       }}
     >
       <p className="mb-3 text-[12.5px] text-ink-subtle">{t("auth.confirmPage.dead.hint")}</p>
+      <div className="mb-3">
+        <ChallengeField challenge={challenge} />
+      </div>
+      {send.isError && (
+        <p role="alert" className="mb-3 text-sm text-accent">
+          {t("auth.error.challengeFailed")}
+        </p>
+      )}
       <div className="flex items-center gap-3">
         <input
           type="email"
@@ -165,7 +181,12 @@ function AskForAnother() {
           placeholder={t("auth.confirmPage.dead.placeholder")}
           className="h-[46px] min-w-0 flex-1 rounded-[9px] border border-line bg-surface px-3.5 text-[14px] outline-none placeholder:text-ink-subtle"
         />
-        <Button type="submit" loading={send.isPending} className="h-[46px] rounded-[9px] px-5">
+        <Button
+          type="submit"
+          loading={send.isPending}
+          disabled={!challenge.satisfied}
+          className="h-[46px] rounded-[9px] px-5"
+        >
           {t("auth.confirmPage.dead.send")}
         </Button>
       </div>

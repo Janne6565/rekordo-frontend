@@ -1,5 +1,6 @@
 import { Button, buttonClassName } from "@/components/ui";
 import { AuthBrandPanel } from "@/features/auth/AuthBrandPanel";
+import { ChallengeField } from "@/features/auth/ChallengeField";
 import { PasswordField } from "@/features/auth/PasswordField";
 import { ProviderIcon } from "@/features/auth/ProviderIcon";
 import type { AuthError } from "@/features/auth/useAuthLogic";
@@ -151,6 +152,10 @@ export function SignInPage() {
                 {t("auth.rememberMe")}
               </Checkbox>
             )}
+
+            {/* Above the errors and below the ticks: it is the last thing asked before the
+                button, and a check that appeared under the button would be missed. */}
+            <ChallengeField challenge={logic.challenge} />
 
             {logic.failed.length > 0 && <AuthErrorMessages errors={logic.failed} />}
 

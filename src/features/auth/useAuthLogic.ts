@@ -1,6 +1,7 @@
 import { setAccessToken } from "@/api/axios-instance";
 import { login, logout, providers, register } from "@/api/generated/auth/auth";
 import { invalidFields } from "@/api/problem";
+import { useChallenge } from "@/features/auth/useChallenge";
 import { useStore } from "@/local/StoreProvider";
 import { signedIn, signedOut } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -17,6 +18,7 @@ export type AuthError =
   | "invalidEmail"
   | "passwordTooShort"
   | "consentRequired"
+  | "challengeFailed"
   | "generic";
 
 /**
@@ -38,6 +40,10 @@ function errorsFrom(error: unknown): AuthError[] {
   const status = (error as { response?: { status?: number } }).response?.status;
   if (status === 409) return ["emailTaken"];
   if (status === 401) return ["badCredentials"];
+  // The bot check. Its own status precisely so it can be told apart from a wrong password
+  // and from a rate limit: the only useful response to it is to solve a fresh challenge,
+  // which is what the widget below is reset for.
+  if (status === 403) return ["challengeFailed"];
   // One line per distinct complaint: both consent ticks map to the same sentence, and
   // printing it twice would read as two different problems.
   const named = [
@@ -58,6 +64,11 @@ export function useAuthLogic() {
   const auth = useAppSelector((state) => state.auth);
 
   const [mode, setMode] = useState<AuthMode>("SIGN_IN");
+  /*
+   * One widget, re-created when the mode flips: a token carries the action it was solved
+   * for, and the server refuses a sign-in token presented at sign-up.
+   */
+  const challenge = useChallenge(mode === "REGISTER" ? "register" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -87,8 +98,14 @@ export function useAuthLogic() {
               displayName: displayName.trim(),
               acceptedTerms: agreed,
               confirmedAge: ageConfirmed,
+              turnstileToken: challenge.token,
             })
-          : await login({ email: email.trim(), password, rememberMe });
+          : await login({
+              email: email.trim(),
+              password,
+              rememberMe,
+              turnstileToken: challenge.token,
+            });
       if (session.accessToken == null || session.user == null) {
         throw new Error("The server did not return a session");
       }
@@ -103,12 +120,16 @@ export function useAuthLogic() {
     onSuccess: ({ user, firstSyncPending }) => {
       dispatch(signedIn({ user, firstSyncPending }));
       setFailed([]);
+      // Spent either way: a token is redeemed exactly once, so leaving it in place would
+      // make a second attempt on this page fail for a reason nobody could see.
+      challenge.reset();
       // Always, now: the conflict dialogue is drawn over the library rather than here, so
       // the library is where the question gets asked (29).
       void navigate({ to: "/" });
     },
     onError: (error: unknown) => {
       setFailed(errorsFrom(error));
+      challenge.reset();
     },
   });
 
@@ -146,6 +167,7 @@ export function useAuthLogic() {
     ageConfirmed,
     setAgeConfirmed,
     availableProviders: providerQuery.data ?? [],
+    challenge,
     // Completeness only — the server validates the address and password properly, and a
     // dead button that will not say why is worse than a rejected submit. The two consent
     // boxes are the exception: they are required acknowledgements, not format rules, and
@@ -153,7 +175,11 @@ export function useAuthLogic() {
     canSubmit:
       email.trim().length > 0 &&
       password.length > 0 &&
-      (mode === "SIGN_IN" || (agreed && ageConfirmed)),
+      (mode === "SIGN_IN" || (agreed && ageConfirmed)) &&
+      // Unsolved, or the site key not yet known. The second half matters: without it the
+      // first submit after a cold load would post before this client learned a token was
+      // required, and be refused with a 403 that looks like nothing the form did.
+      challenge.satisfied,
     submit: () => {
       // The one rule worth checking before the round trip, because the server can only
       // answer it with the same sentence the field already carries as a hint.

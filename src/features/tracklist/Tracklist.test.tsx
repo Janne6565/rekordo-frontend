@@ -197,4 +197,13 @@ describe("Tracklist", () => {
     const { container } = renderSection({ releaseId: undefined });
     expect(container.textContent).toBe("");
   });
+
+  // The wire's answer for a copy added album-first, and for a wish that names no pressing:
+  // an explicit null, not an absent field. It used to slip past the undefined check and be
+  // handed to `isManualReleaseId`, whose `startsWith` took down the whole sheet.
+  it("is not there for a record whose release arrives as an explicit null", () => {
+    const { container } = renderSection({ releaseId: null });
+    expect(container.textContent).toBe("");
+    expect(fetchTracklist).not.toHaveBeenCalled();
+  });
 });

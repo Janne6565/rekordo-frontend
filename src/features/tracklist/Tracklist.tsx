@@ -19,8 +19,13 @@ const META = "font-mono text-[10px] sm:text-[10.5px] text-ink-subtle/80";
 const ROW = "grid grid-cols-[34px_1fr_42px] sm:grid-cols-[38px_1fr_46px] gap-x-2.5 sm:gap-x-3";
 
 export interface TracklistProps {
-  /** The release the copy points at. `local:` ids never reach the network. */
-  readonly releaseId: string | undefined;
+  /**
+   * The release the copy points at. `local:` ids never reach the network.
+   *
+   * Null as well as undefined: a copy added album-first names no pressing, and the server
+   * sends that as an explicit null rather than leaving the field out.
+   */
+  readonly releaseId: string | null | undefined;
   /**
    * What the sheet already knows, from the release row it is drawn from. The header is
    * true before the titles arrive because of these two, and the wait is sized from them.
@@ -55,7 +60,7 @@ export interface TracklistProps {
 export function Tracklist({ releaseId, ...rest }: TracklistProps) {
   // A record that names no release has no section, and asks for none of the machinery
   // behind one — a wishlist entry typed in by hand never touches the query client.
-  if (releaseId === undefined) return null;
+  if (releaseId == null) return null;
   return <Section releaseId={releaseId} {...rest} />;
 }
 

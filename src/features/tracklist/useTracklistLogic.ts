@@ -30,12 +30,16 @@ export interface TracklistState {
   readonly retry: () => void;
 }
 
-export function useTracklistLogic(releaseId: string | undefined): TracklistState {
-  const manual = releaseId !== undefined && isManualReleaseId(releaseId);
+export function useTracklistLogic(releaseId: string | null | undefined): TracklistState {
+  // `!= null` throughout, not `!== undefined`: the generated DTOs type every field
+  // optional, but the wire carries an explicit null for a copy or a wish that names no
+  // pressing. Checking only for undefined let that null reach `isManualReleaseId`, which
+  // called `startsWith` on it and took the whole sheet down.
+  const manual = releaseId != null && isManualReleaseId(releaseId);
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["tracklist", releaseId],
     queryFn: () => fetchTracklist(releaseId as string),
-    enabled: releaseId !== undefined && !manual,
+    enabled: releaseId != null && !manual,
     retry: false,
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
@@ -46,7 +50,7 @@ export function useTracklistLogic(releaseId: string | undefined): TracklistState
   }
   return {
     tracklist: data,
-    loading: releaseId !== undefined && isPending && !isError,
+    loading: releaseId != null && isPending && !isError,
     unreachable: isError,
     retry: () => void refetch(),
   };

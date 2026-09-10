@@ -42,7 +42,7 @@ export interface SharedDetailItem {
    * is a block of its own below the grid, it arrives after the sheet is drawn, and it has
    * three states the label-over-value shape cannot carry.
    */
-  readonly releaseId?: string;
+  readonly releaseId?: string | null;
 }
 
 const LABEL = "font-mono text-[9.5px] uppercase tracking-[0.16em] text-ink-subtle";

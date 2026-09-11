@@ -155,6 +155,17 @@ async function load(url: string): Promise<void> {
       ),
       ...(full ? [new TracingInstrumentation()] : []),
     ],
+    userActionsInstrumentation: {
+      // How long a press may wait for its first DOM change, request or resource load before
+      // Faro decides nothing happened and discards it. The default is 100 ms, and it is
+      // measured from POINTERDOWN — while every handler here runs on click, which fires on
+      // pointerup. Nothing in the DOM changes while a button is held (`:active` is CSS, not
+      // a mutation), so any press held past 100 ms was dropped before the handler had even
+      // run, and whether an action was recorded depended on how quickly the finger lifted.
+      // A second covers a slow tap on a phone; the cost is that an unrelated re-render in
+      // that window can validate a press that did nothing, which is the lesser error.
+      initialActivityTimeout: 1000,
+    },
     ignoreErrors: [
       // Layout quirks and cross-origin noise: harmless, and they would drown real errors.
       /^ResizeObserver loop limit exceeded$/,

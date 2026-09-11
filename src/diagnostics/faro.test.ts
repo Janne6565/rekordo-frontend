@@ -112,6 +112,16 @@ describe("diagnostics configuration per level", () => {
     expect(instrumentations.some((i) => i instanceof UserActionInstrumentation)).toBe(true);
   });
 
+  it("gives a press long enough to reach its click handler before it is discarded", async () => {
+    await started("FULL");
+    // The SDK default is 100 ms from pointerdown, which a normal press outlasts. Anything
+    // at or below it silently loses every action whose button is held a moment too long.
+    const timeout = (
+      calls.init[0]?.userActionsInstrumentation as { initialActivityTimeout: number }
+    ).initialActivityTimeout;
+    expect(timeout).toBeGreaterThanOrEqual(500);
+  });
+
   it("never starts for a browser that answered NOTHING", async () => {
     writeDiagnosticsLevel("NOTHING");
     const faro = await freshModule();

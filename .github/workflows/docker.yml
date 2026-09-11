@@ -51,6 +51,11 @@ jobs:
           # Reading @janne6565/rekordo-shared from GitHub Packages.
           secrets: |
             npm_token=${{ secrets.GITHUB_TOKEN }}
+          # A repository variable, not a secret: the collector URL is baked into the public
+          # bundle and readable by anyone who opens devtools. It lives outside the repo only
+          # because it is environment-specific.
+          build-args: |
+            VITE_FARO_COLLECTOR_URL=${{ vars.VITE_FARO_COLLECTOR_URL }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

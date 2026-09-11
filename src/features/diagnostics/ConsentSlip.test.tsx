@@ -65,6 +65,22 @@ describe("ConsentSlip", () => {
     expect(screen.getByText(/cleared when that tab closes/)).toBeDefined();
   });
 
+  it("offers a close button on the acknowledgement that keeps the choice", () => {
+    renderSlip();
+    fireEvent.click(screen.getByTestId("consent-level-ANONYMOUS"));
+    fireEvent.click(screen.getByRole("button", { name: "Save choice" }));
+
+    const close = screen.getByRole("button", { name: "Dismiss" });
+    fireEvent.click(close);
+
+    // Gone from the page, and the answer stands: closing a note that says diagnostics are
+    // on must not quietly turn them off, which is what Undo is for.
+    expect(screen.queryByTestId("consent-slip")).toBeNull();
+    expect(globalThis.localStorage.getItem("music-collector-diagnostics-consent")).toContain(
+      "ANONYMOUS",
+    );
+  });
+
   it("stays out of the way of a browser that has already answered", () => {
     globalThis.localStorage.setItem(
       "music-collector-diagnostics-consent",

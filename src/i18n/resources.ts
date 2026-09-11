@@ -1311,28 +1311,31 @@ const enCommon = {
   diagnostics: {
     eyebrow: "Diagnostics · your call",
     title: "How much may Rekordo tell us when it breaks?",
-    body: "Pick one. Nothing is collected until you do, and Settings changes it at any time.",
+    body: "Pick one. Nothing is collected until you do, and Settings changes it later.",
     bodyShort: "Pick one. Nothing is collected until you do.",
     save: "Save choice",
     savePrompt: "Pick one of the three to continue.",
     detailLink: "What each level collects",
-    provider: "Grafana Cloud · EU region",
+    provider: "Grafana Cloud · EU",
     privacyPolicy: "Privacy policy",
     level: {
       anonymous: {
         title: "Anonymous only",
         body: "Errors and timings with no session identifier and nothing tied to your account. Two errors from you cannot be connected to each other.",
         short: "Errors and timings, no session ID, nothing tied to your account.",
+        hint: "no session ID, no account link",
       },
       full: {
         title: "Full",
         body: "Adds a random per-tab session ID, links what is sent to your Rekordo account, and joins a click to the backend trace behind it.",
         short: "Adds a random per-tab session ID, your account and the backend trace.",
+        hint: "adds a per-tab session ID, your account, the backend trace",
       },
       nothing: {
         title: "Nothing",
         body: "No diagnostics leave your device. We will not ask again.",
         short: "No diagnostics leave your device.",
+        hint: "no diagnostics leave your device",
       },
     },
     detail: {
@@ -2709,28 +2712,31 @@ const deCommon: CommonSchema = {
   diagnostics: {
     eyebrow: "Diagnose · deine Entscheidung",
     title: "Wie viel darf Rekordo uns melden, wenn etwas kaputtgeht?",
-    body: "Wähle eines. Vorher wird nichts erfasst, und in den Einstellungen lässt es sich jederzeit ändern.",
+    body: "Wähle eines. Vorher wird nichts erfasst, und in den Einstellungen lässt es sich später ändern.",
     bodyShort: "Wähle eines. Vorher wird nichts erfasst.",
     save: "Auswahl speichern",
     savePrompt: "Wähle eines der drei aus, um fortzufahren.",
     detailLink: "Was die Stufen erfassen",
-    provider: "Grafana Cloud · EU-Region",
+    provider: "Grafana Cloud · EU",
     privacyPolicy: "Datenschutzerklärung",
     level: {
       anonymous: {
         title: "Nur anonym",
         body: "Fehler und Zeiten ohne Sitzungskennung und ohne Bezug zu deinem Konto. Zwei Fehler von dir lassen sich nicht miteinander verbinden.",
         short: "Fehler und Zeiten, keine Sitzungskennung, kein Kontobezug.",
+        hint: "keine Sitzungskennung, kein Kontobezug",
       },
       full: {
         title: "Vollständig",
         body: "Ergänzt eine zufällige Sitzungskennung pro Tab, verknüpft das Gesendete mit deinem Rekordo-Konto und verbindet einen Klick mit dem Trace im Backend.",
         short: "Ergänzt eine zufällige Sitzungskennung pro Tab, dein Konto und den Backend-Trace.",
+        hint: "ergänzt eine Sitzungskennung pro Tab, dein Konto, den Backend-Trace",
       },
       nothing: {
         title: "Nichts",
         body: "Es verlassen keine Diagnosedaten dein Gerät. Wir fragen nicht noch einmal.",
         short: "Es verlassen keine Diagnosedaten dein Gerät.",
+        hint: "keine Diagnosedaten verlassen dein Gerät",
       },
     },
     detail: {

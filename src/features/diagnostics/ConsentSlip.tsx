@@ -5,7 +5,7 @@ import { useConsentSlipLogic } from "@/features/diagnostics/useConsentSlipLogic"
 import { cn } from "@/lib/utils";
 import { DIAGNOSTICS_LEVELS, type DiagnosticsLevel } from "@/local/diagnosticsConsent";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
+import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const LEVEL_KEY = {
@@ -54,7 +54,7 @@ export function ConsentSlip() {
     >
       <div
         className={cn(
-          "pointer-events-auto w-full max-w-[520px] overflow-hidden rounded-xl border border-line bg-paper shadow-[0_20px_44px_rgba(25,23,19,0.13),0_2px_6px_rgba(25,23,19,0.05)]",
+          "pointer-events-auto w-full max-w-[524px] overflow-hidden rounded-xl border border-line bg-paper shadow-[0_20px_44px_rgba(25,23,19,0.13),0_2px_6px_rgba(25,23,19,0.05)]",
           // A quarter-degree off true, so it reads as a slip that was set down rather than
           // a panel that was docked. Straightened when motion is reduced.
           "motion-safe:-rotate-[0.3deg]",
@@ -62,7 +62,7 @@ export function ConsentSlip() {
         data-testid="consent-slip"
       >
         <div className="h-[3px] bg-accent" />
-        <div className="p-5 sm:p-6">
+        <div className="px-[19px] pt-[17px] pb-4">
           {acknowledged ? (
             <Acknowledgement logic={logic} />
           ) : logic.stage === "DETAIL" ? (
@@ -82,56 +82,52 @@ function Choice({ logic }: { readonly logic: Logic }) {
   const { t } = useTranslation();
   return (
     <>
-      <div className="font-mono text-[10px] tracking-[0.13em] text-ink-subtle uppercase">
+      <div className="font-mono text-[9.5px] tracking-[0.13em] text-ink-subtle uppercase">
         {t("diagnostics.eyebrow")}
       </div>
-      <h2
-        id={TITLE_ID}
-        className="mt-2.5 font-serif text-[21px] leading-[1.2] text-pretty sm:text-[25px]"
-      >
+      <h2 id={TITLE_ID} className="mt-2 mb-[7px] font-serif text-[21px] leading-[1.2] text-pretty">
         {t("diagnostics.title")}
       </h2>
-      <p className="mt-2 text-[13px] leading-[1.6] text-pretty text-ink-muted">
+      <p className="text-[12.5px] leading-[1.6] text-pretty text-ink-muted">
         {t("diagnostics.body")}
       </p>
 
       {/* Labelled by the heading rather than carrying an sr-only legend that repeats it:
           two copies of the same sentence is what a screen reader would actually read out. */}
-      <fieldset aria-labelledby={TITLE_ID} className="mt-4 flex flex-col gap-2">
+      <fieldset aria-labelledby={TITLE_ID} className="mt-3 flex flex-col gap-1.5">
         {DIAGNOSTICS_LEVELS.map((level) => (
           <ConsentLevelRow
             key={level}
             level={level}
             name="diagnostics-level"
+            layout="inline"
             selected={logic.picked === level}
             onSelect={logic.pick}
             title={t(`diagnostics.level.${LEVEL_KEY[level]}.title`)}
-            body={t(`diagnostics.level.${LEVEL_KEY[level]}.body`)}
+            body={t(`diagnostics.level.${LEVEL_KEY[level]}.hint`)}
           />
         ))}
       </fieldset>
 
-      <button
-        type="button"
-        onClick={logic.openDetail}
-        className="mt-3 inline-flex cursor-pointer items-center gap-1.5 text-[12.5px] font-semibold text-accent hover:text-accent-hover"
-      >
-        {t("diagnostics.detailLink")}
-        <ChevronDown size={15} strokeWidth={2} aria-hidden />
-      </button>
-
-      <div className="mt-4">
-        <Button onClick={logic.save} disabled={!logic.canSave} className="w-full">
+      {/* Compact rather than full-width, with the reason it is inert beside it: the hint
+          explains the disabled state in the same glance, instead of under a bar-wide
+          button that reads as the one thing to press. It stays outlined until a row is
+          picked, so an unanswered slip has no filled button pulling at the eye. */}
+      <div className="mt-[13px] flex items-center gap-3">
+        <Button
+          onClick={logic.save}
+          disabled={!logic.canSave}
+          variant={logic.canSave ? "primary" : "secondary"}
+          className="h-10 flex-none px-[22px] text-[13px]"
+        >
           {t("diagnostics.save")}
         </Button>
         {!logic.canSave && (
-          <p className="mt-2 text-center text-[11.5px] text-ink-subtle">
-            {t("diagnostics.savePrompt")}
-          </p>
+          <span className="text-[11.5px] text-ink-subtle">{t("diagnostics.savePrompt")}</span>
         )}
       </div>
 
-      <Footer />
+      <Footer onDetail={logic.openDetail} />
     </>
   );
 }
@@ -143,7 +139,7 @@ function Acknowledgement({ logic }: { readonly logic: Logic }) {
   const level = logic.saved as DiagnosticsLevel;
   const [titleKey, bodyKey] = ACK[level];
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3.5">
       <div className="min-w-0 flex-1">
         <div className="text-[13px] font-semibold">{t(titleKey)}</div>
         <div className="mt-[3px] text-[11.5px] leading-[1.55] text-ink-muted">{t(bodyKey)}</div>
@@ -151,20 +147,45 @@ function Acknowledgement({ logic }: { readonly logic: Logic }) {
       <Button variant="secondary" onClick={logic.undo} className="h-[34px] flex-none px-3.5">
         {t("diagnostics.ack.undo")}
       </Button>
+      {/* Closes the slip and KEEPS the choice. It is not a second Undo: somebody who read
+          the confirmation and wants it gone should not have to wait out the eight seconds,
+          and closing a note that says "diagnostics are on" must not quietly turn them off. */}
+      <button
+        type="button"
+        onClick={logic.dismiss}
+        aria-label={t("diagnostics.ack.dismiss")}
+        className="-mr-1 flex size-7 flex-none cursor-pointer items-center justify-center rounded-full text-ink-subtle transition-colors duration-(--mc-quick) hover:bg-canvas hover:text-ink"
+        data-testid="consent-ack-dismiss"
+      >
+        <X size={17} strokeWidth={1.9} aria-hidden />
+      </button>
     </div>
   );
 }
 
-function Footer() {
+/**
+ * One mono line: what is collected, where it goes, and the policy. The detail link lives
+ * here rather than above the button in the compact slip, so the choice and the Save sit
+ * together and the fine print reads as fine print.
+ */
+function Footer({ onDetail }: { readonly onDetail: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="mt-3.5 flex items-center gap-2 border-t border-line pt-3">
-      <span className="font-mono text-[10.5px] text-ink-subtle">{t("diagnostics.provider")}</span>
-      <span className="font-mono text-[10.5px] text-ink-subtle">·</span>
+    <div className="mt-3 flex flex-wrap items-center gap-[7px] border-t border-line pt-[11px] font-mono text-[10px] uppercase">
+      <button
+        type="button"
+        onClick={onDetail}
+        className="cursor-pointer uppercase text-accent hover:text-accent-hover"
+      >
+        {t("diagnostics.detailLink")}
+      </button>
+      <span className="text-ink-subtle">·</span>
+      <span className="text-ink-subtle">{t("diagnostics.provider")}</span>
+      <span className="text-ink-subtle">·</span>
       <Link
         to="/legal/$doc"
         params={{ doc: "datenschutz" }}
-        className="font-mono text-[10.5px] text-accent hover:text-accent-hover"
+        className="text-accent hover:text-accent-hover"
       >
         {t("diagnostics.privacyPolicy")}
       </Link>

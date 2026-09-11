@@ -8,6 +8,12 @@ interface ConsentLevelRowProps {
   readonly selected: boolean;
   readonly onSelect: (level: DiagnosticsLevel) => void;
   readonly name: string;
+  /**
+   * `inline` is the compact slip (2a): the title and a short hint share one line and wrap
+   * only when the row is too narrow. `stacked` is Settings (2d), where the rows have room
+   * and the sentence under the title reads better than a clipped hint.
+   */
+  readonly layout?: "inline" | "stacked";
 }
 
 /**
@@ -28,11 +34,14 @@ export function ConsentLevelRow({
   selected,
   onSelect,
   name,
+  layout = "stacked",
 }: ConsentLevelRowProps) {
+  const inline = layout === "inline";
   return (
     <label
       className={cn(
-        "flex cursor-pointer items-start gap-3 rounded-xl border bg-surface p-3 transition-colors duration-(--mc-quick)",
+        "flex cursor-pointer items-start rounded-[10px] border bg-surface transition-colors duration-(--mc-quick)",
+        inline ? "gap-[11px] px-[13px] py-[11px]" : "gap-3 p-3",
         selected ? "border-ink" : "border-line hover:bg-canvas",
       )}
     >
@@ -48,18 +57,26 @@ export function ConsentLevelRow({
       <span
         aria-hidden
         className={cn(
-          "mt-[3px] flex size-[18px] flex-none items-center justify-center rounded-full border transition-colors duration-(--mc-quick)",
+          "mt-[2px] flex flex-none items-center justify-center rounded-full border transition-colors duration-(--mc-quick)",
+          inline ? "size-[17px]" : "size-[18px]",
           selected ? "border-ink" : "border-line",
         )}
       >
         <span className={cn("size-[9px] rounded-full", selected && "bg-ink")} />
       </span>
-      <span className="min-w-0">
-        <span className="block text-[13.5px] font-semibold">{title}</span>
-        <span className="mt-[3px] block text-[12px] leading-[1.55] text-pretty text-ink-muted">
-          {body}
+      {inline ? (
+        <span className="flex min-w-0 flex-wrap items-baseline gap-x-[7px]">
+          <span className="text-[13px] font-semibold">{title}</span>
+          <span className="text-[11.5px] leading-[1.5] text-ink-muted">{body}</span>
         </span>
-      </span>
+      ) : (
+        <span className="min-w-0">
+          <span className="block text-[13.5px] font-semibold">{title}</span>
+          <span className="mt-[3px] block text-[12px] leading-[1.55] text-pretty text-ink-muted">
+            {body}
+          </span>
+        </span>
+      )}
     </label>
   );
 }

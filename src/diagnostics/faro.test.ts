@@ -16,8 +16,17 @@ const calls = vi.hoisted(() => ({
   unpause: vi.fn(),
 }));
 
+const UserActionInstrumentation = vi.hoisted(
+  () =>
+    class UserActionInstrumentation {
+      readonly kind = "user-actions";
+    },
+);
+
 vi.mock("@grafana/faro-web-sdk", () => ({
-  getWebInstrumentations: () => ["web"],
+  UserActionInstrumentation,
+  // Mirrors the real function: user actions first, and no option to leave them out.
+  getWebInstrumentations: () => [new UserActionInstrumentation(), "web"],
   initializeFaro: (config: Record<string, unknown>) => {
     calls.init.push(config);
     return {
@@ -91,6 +100,18 @@ describe("diagnostics configuration per level", () => {
     expect(calls.setSession).not.toHaveBeenCalled();
   });
 
+  it("anonymous filters out user actions, because the buttons you press are a Full disclosure", async () => {
+    await started("ANONYMOUS");
+    const instrumentations = calls.init[0]?.instrumentations as unknown[];
+    expect(instrumentations.some((i) => i instanceof UserActionInstrumentation)).toBe(false);
+  });
+
+  it("full keeps user actions", async () => {
+    await started("FULL");
+    const instrumentations = calls.init[0]?.instrumentations as unknown[];
+    expect(instrumentations.some((i) => i instanceof UserActionInstrumentation)).toBe(true);
+  });
+
   it("never starts for a browser that answered NOTHING", async () => {
     writeDiagnosticsLevel("NOTHING");
     const faro = await freshModule();
@@ -152,6 +173,24 @@ describe("applyLevel", () => {
   it("drops a trace that reaches an anonymous instance by any route", async () => {
     const faro = await started("ANONYMOUS");
     expect(faro.applyLevel(item({ type: "trace" } as Partial<TransportItem>))).toBeNull();
+  });
+
+  it("drops a user-action event that reaches an anonymous instance by any route", async () => {
+    const faro = await started("ANONYMOUS");
+    const action = item({
+      type: "event",
+      payload: { name: "faro.user.action" },
+    } as Partial<TransportItem>);
+    expect(faro.applyLevel(action)).toBeNull();
+  });
+
+  it("lets a user-action event through at FULL", async () => {
+    const faro = await started("FULL");
+    const action = item({
+      type: "event",
+      payload: { name: "faro.user.action" },
+    } as Partial<TransportItem>);
+    expect(faro.applyLevel(action)).toBe(action);
   });
 
   it("drops everything queued by a FULL instance once the reader has downgraded", async () => {

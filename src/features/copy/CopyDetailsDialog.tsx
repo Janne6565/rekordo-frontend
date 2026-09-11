@@ -374,6 +374,7 @@ export function CopyDetailsDialog({
           // this copy is rather than at the bottom of a page you were only reading.
           <Button
             variant="secondary"
+            action="copy.remove"
             onClick={onRemove}
             loading={removing}
             className="h-[34px] border-0 bg-transparent px-0 text-[12px] font-medium text-accent"
@@ -438,6 +439,7 @@ function DialogActions({
       </Button>
       <Button
         type="submit"
+        action="copy.save"
         form={formId}
         // A hand-entered copy with its artist or title cleared has nothing left to name it.
         disabled={!canSave}

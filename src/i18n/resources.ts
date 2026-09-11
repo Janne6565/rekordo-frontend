@@ -1349,7 +1349,7 @@ const enCommon = {
         "A session identifier, randomly generated for the tab you are in and cleared when that tab closes",
       full2: "A link to your signed-in Rekordo account",
       full3:
-        "The pages you visit in that session, and the backend trace behind an action you took in the browser",
+        "The pages you visit in that session, which of the main buttons you press and how long each took, and the backend trace behind it",
       eitherHeading: "Either way",
       either1:
         "Sent to Grafana Cloud in the EU region and kept there. Not sold, and never used for advertising.",
@@ -2747,7 +2747,7 @@ const deCommon: CommonSchema = {
         "Eine Sitzungskennung, zufällig erzeugt für den Tab, in dem du bist, und gelöscht, sobald dieser Tab schließt",
       full2: "Eine Verknüpfung mit deinem angemeldeten Rekordo-Konto",
       full3:
-        "Die Seiten, die du in dieser Sitzung besuchst, und den Backend-Trace hinter einer Aktion im Browser",
+        "Die Seiten, die du in dieser Sitzung besuchst, welche der wichtigsten Schaltflächen du drückst und wie lange sie jeweils dauern, und den Backend-Trace dahinter",
       eitherHeading: "In beiden Fällen",
       either1:
         "Gesendet an Grafana Cloud in der EU-Region und dort gespeichert. Nicht verkauft und nie für Werbung genutzt.",

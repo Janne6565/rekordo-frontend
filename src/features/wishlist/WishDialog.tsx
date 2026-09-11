@@ -366,6 +366,7 @@ function DetailsStep({ logic }: { readonly logic: Logic }) {
       <div className="flex flex-none items-center justify-between gap-4 border-t border-line bg-surface px-6 py-3.5">
         <span className="text-[11.5px] text-ink-muted">{t("wishlist.oneEntryHint")}</span>
         <Button
+          action="wish.save"
           onClick={logic.save}
           loading={logic.saving}
           className="h-[34px] flex-none rounded-lg px-3.5 text-[12.5px]"

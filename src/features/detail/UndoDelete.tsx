@@ -159,6 +159,7 @@ function UndoToast({
         )}
         <Button
           variant="secondary"
+          action="copy.restore"
           onClick={takeItBack}
           className="h-[26px] flex-none rounded-md border-0 bg-paper/15 px-2.5 text-[12px] font-semibold text-paper hover:bg-paper/25"
         >

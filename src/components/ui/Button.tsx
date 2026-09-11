@@ -1,3 +1,4 @@
+import type { UserActionName } from "@/diagnostics/userActions";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
@@ -22,6 +23,11 @@ export function buttonClassName(variant: ButtonVariant = "primary", className?: 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly loading?: boolean;
   readonly variant?: ButtonVariant;
+  /**
+   * Times a press of this button as a Faro user action, grouping the requests it sets off.
+   * Only the name is sent, never the label or anything typed; see `diagnostics/userActions`.
+   */
+  readonly action?: UserActionName;
   readonly children: ReactNode;
 }
 
@@ -34,6 +40,7 @@ export function Button({
   variant = "primary",
   className,
   disabled,
+  action,
   children,
   ...rest
 }: ButtonProps) {
@@ -42,6 +49,7 @@ export function Button({
       type="button"
       disabled={disabled === true || loading}
       className={buttonClassName(variant, className)}
+      data-faro-user-action-name={action}
       {...rest}
     >
       {loading && <Loader2 size={16} className="animate-spin" aria-hidden />}

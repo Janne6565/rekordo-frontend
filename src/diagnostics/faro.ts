@@ -40,6 +40,9 @@ const COLLECTOR_URL = import.meta.env.VITE_FARO_COLLECTOR_URL as string | undefi
 // Matches the app as named in Grafana, which the collector relabels every item with anyway.
 const APP_NAME = "Rekordo";
 
+/** What Faro's UserActionInstrumentation names the event for a completed action. */
+const USER_ACTION_EVENT = "faro.user.action";
+
 /** The session every anonymous browser shares. A label, not an identifier. */
 const ANONYMOUS_SESSION_ID = "anonymous";
 
@@ -88,9 +91,12 @@ export function applyLevel(item: TransportItem): TransportItem | null {
   if (level === null || startedAs === null || RANK[level] < RANK[startedAs]) return null;
   if (startedAs === "FULL") return item;
 
-  // Anonymous mode never sends traces — the instrumentation is not loaded — so a trace
-  // item here arrived some other way and is dropped rather than trusted.
+  // Anonymous mode loads neither tracing nor user actions, so a trace or a user-action
+  // event arriving here came some other way, and is dropped rather than trusted.
   if (item.type === "trace") return null;
+  if (item.type === "event" && (item.payload as { name?: string }).name === USER_ACTION_EVENT) {
+    return null;
+  }
   const { user: _user, ...meta } = item.meta;
   return {
     ...item,
@@ -122,8 +128,10 @@ export function startDiagnostics(level: DiagnosticsLevel | null): void {
 }
 
 async function load(url: string): Promise<void> {
-  const [{ getWebInstrumentations, initializeFaro }, { TracingInstrumentation }] =
-    await Promise.all([import("@grafana/faro-web-sdk"), import("@grafana/faro-web-tracing")]);
+  const [
+    { getWebInstrumentations, initializeFaro, UserActionInstrumentation },
+    { TracingInstrumentation },
+  ] = await Promise.all([import("@grafana/faro-web-sdk"), import("@grafana/faro-web-tracing")]);
 
   // Re-read after the await: somebody can press Undo, or change their mind in Settings,
   // between consenting and the chunk arriving. Whatever is true now is what starts.
@@ -138,7 +146,13 @@ async function load(url: string): Promise<void> {
     app: { name: APP_NAME, environment: environment() },
     sessionTracking: full ? { enabled: true, persistent: false } : { enabled: false },
     instrumentations: [
-      ...getWebInstrumentations({ captureConsole: false }),
+      // `getWebInstrumentations` always includes user actions and has no option to leave
+      // them out, so at ANONYMOUS they are filtered by type. Which buttons somebody presses
+      // is not an error or a timing, and "an action you took in the browser" is listed as
+      // something only Full collects.
+      ...getWebInstrumentations({ captureConsole: false }).filter(
+        (instrumentation) => full || !(instrumentation instanceof UserActionInstrumentation),
+      ),
       ...(full ? [new TracingInstrumentation()] : []),
     ],
     ignoreErrors: [

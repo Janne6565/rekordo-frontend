@@ -612,6 +612,7 @@ export function ResultRow({
       <div className="flex flex-none gap-1.5">
         <Button
           variant={owned === null ? "primary" : "secondary"}
+          action="wish.add"
           onClick={() => logic.addWish(release)}
           loading={logic.wishingMbid === release.id}
           className="h-8 flex-none rounded-full px-3 text-xs"
@@ -621,6 +622,7 @@ export function ResultRow({
         </Button>
         <Button
           variant={owned === null ? "primary" : "secondary"}
+          action="copy.add"
           onClick={() => logic.addRelease(release)}
           loading={logic.addingMbid === release.id}
           className="h-8 flex-none whitespace-nowrap rounded-full px-3 text-xs"

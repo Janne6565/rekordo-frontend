@@ -161,6 +161,7 @@ export function SignInPage() {
 
             <Button
               type="submit"
+              action={registering ? "auth.sign-up" : "auth.sign-in"}
               loading={logic.submitting}
               disabled={!logic.canSubmit}
               className="h-[46px] rounded-[9px]"

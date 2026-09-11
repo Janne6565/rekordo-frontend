@@ -261,6 +261,7 @@ export function ManualTab({ onClose, onAdded }: ManualTabProps) {
             {t("common.cancel")}
           </Button>
           <Button
+            action="copy.add-manual"
             onClick={logic.save}
             disabled={!logic.canSave}
             loading={logic.saving}

@@ -37,7 +37,8 @@ import type { Faro, TransportItem } from "@grafana/faro-web-sdk";
  */
 
 const COLLECTOR_URL = import.meta.env.VITE_FARO_COLLECTOR_URL as string | undefined;
-const APP_NAME = "rekordo-web";
+// Matches the app as named in Grafana, which the collector relabels every item with anyway.
+const APP_NAME = "Rekordo";
 
 /** The session every anonymous browser shares. A label, not an identifier. */
 const ANONYMOUS_SESSION_ID = "anonymous";
@@ -148,9 +149,15 @@ async function load(url: string): Promise<void> {
       /chrome-extension:\/\//,
       /moz-extension:\/\//,
     ],
-    // Cloudflare Turnstile loads and polls from its own origin on the auth screens. Its
-    // requests are the challenge working, not the app misbehaving.
-    ignoreUrls: [/challenges\.cloudflare\.com/],
+    ignoreUrls: [
+      // Faro's own sends. They go to this origin now, through the nginx proxy, so without
+      // this the fetch instrumentation times every delivery and the tracing instrumentation
+      // stamps a traceparent on it: diagnostics reporting on the act of reporting.
+      /\/faro\/collect/,
+      // Cloudflare Turnstile loads and polls from its own origin on the auth screens. Its
+      // requests are the challenge working, not the app misbehaving.
+      /challenges\.cloudflare\.com/,
+    ],
     beforeSend: applyLevel,
   });
 

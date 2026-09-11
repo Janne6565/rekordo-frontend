@@ -1308,6 +1308,80 @@ const enCommon = {
     unreachableShared: "The catalogue did not answer. Only the titles come from outside.",
     retry: "Try again",
   },
+  diagnostics: {
+    eyebrow: "Diagnostics · your call",
+    title: "How much may Rekordo tell us when it breaks?",
+    body: "Pick one. Nothing is collected until you do, and Settings changes it at any time.",
+    bodyShort: "Pick one. Nothing is collected until you do.",
+    save: "Save choice",
+    savePrompt: "Pick one of the three to continue.",
+    detailLink: "What each level collects",
+    provider: "Grafana Cloud · EU region",
+    privacyPolicy: "Privacy policy",
+    level: {
+      anonymous: {
+        title: "Anonymous only",
+        body: "Errors and timings with no session identifier and nothing tied to your account. Two errors from you cannot be connected to each other.",
+        short: "Errors and timings, no session ID, nothing tied to your account.",
+      },
+      full: {
+        title: "Full",
+        body: "Adds a random per-tab session ID, links what is sent to your Rekordo account, and joins a click to the backend trace behind it.",
+        short: "Adds a random per-tab session ID, your account and the backend trace.",
+      },
+      nothing: {
+        title: "Nothing",
+        body: "No diagnostics leave your device. We will not ask again.",
+        short: "No diagnostics leave your device.",
+      },
+    },
+    detail: {
+      title: "What each level collects",
+      lead: "Two levels, plainly.",
+      anonymousHeading: "Anonymous only",
+      anonymous1: "JavaScript errors and crash reports, with the page they happened on",
+      anonymous2: "Page load and responsiveness timings",
+      anonymous3: "Your browser and device type",
+      anonymous4:
+        "No session identifier and no account link, so two errors from you cannot be connected to each other",
+      fullHeading: "Full adds",
+      full1:
+        "A session identifier, randomly generated for the tab you are in and cleared when that tab closes",
+      full2: "A link to your signed-in Rekordo account",
+      full3:
+        "The pages you visit in that session, and the backend trace behind an action you took in the browser",
+      eitherHeading: "Either way",
+      either1:
+        "Sent to Grafana Cloud in the EU region and kept there. Not sold, and never used for advertising.",
+      either2:
+        "Your IP address is not stored. It passes through to work out a coarse region and is then discarded, and location lookup is switched off.",
+      either3:
+        "No record titles, no notes, no prices, no photos. Your collection is not part of this at either level.",
+      back: "Back to the choice",
+    },
+    ack: {
+      anonymousTitle: "Anonymous diagnostics are on. Thank you.",
+      anonymousBody: "No session ID, no account link. Settings · Privacy changes the level.",
+      fullTitle: "Full diagnostics are on. Thank you.",
+      fullBody: "Session ID and account link included. Settings · Privacy changes the level.",
+      nothingTitle: "Nothing will be collected.",
+      nothingBody: "We won't ask again. Settings · Privacy if you change your mind.",
+      undo: "Undo",
+      dismiss: "Dismiss",
+    },
+    settings: {
+      section: "Privacy",
+      title: "Diagnostics",
+      body: "What Rekordo may send us when it breaks.",
+      receiptAnonymous: "Anonymous only since {{date}}. Tap another row and it changes at once.",
+      receiptFull:
+        "Full since {{date}}. Deletion is only offered at this level, because it is the only one that can find your data.",
+      receiptNothing: "Nothing, chosen {{date}}. The banner will not ask again.",
+      receiptUnset: "Not answered yet. The slip will ask once.",
+      deleteTitle: "Delete what has been sent",
+      deleteBody: "Asks Grafana to drop this account's telemetry",
+    },
+  },
   common: {
     /* 24h: the accessible name of the phone's back chevron on the account pages. */
     backTo: "Back to {{page}}",
@@ -2631,6 +2705,84 @@ const deCommon: CommonSchema = {
       "Der Katalog hat nicht geantwortet. Alles andere an diesem Exemplar geh\u00f6rt dir und liegt hier. Nur die Titel kommen von au\u00dfen.",
     unreachableShared: "Der Katalog hat nicht geantwortet. Nur die Titel kommen von au\u00dfen.",
     retry: "Erneut versuchen",
+  },
+  diagnostics: {
+    eyebrow: "Diagnose · deine Entscheidung",
+    title: "Wie viel darf Rekordo uns melden, wenn etwas kaputtgeht?",
+    body: "Wähle eines. Vorher wird nichts erfasst, und in den Einstellungen lässt es sich jederzeit ändern.",
+    bodyShort: "Wähle eines. Vorher wird nichts erfasst.",
+    save: "Auswahl speichern",
+    savePrompt: "Wähle eines der drei aus, um fortzufahren.",
+    detailLink: "Was die Stufen erfassen",
+    provider: "Grafana Cloud · EU-Region",
+    privacyPolicy: "Datenschutzerklärung",
+    level: {
+      anonymous: {
+        title: "Nur anonym",
+        body: "Fehler und Zeiten ohne Sitzungskennung und ohne Bezug zu deinem Konto. Zwei Fehler von dir lassen sich nicht miteinander verbinden.",
+        short: "Fehler und Zeiten, keine Sitzungskennung, kein Kontobezug.",
+      },
+      full: {
+        title: "Vollständig",
+        body: "Ergänzt eine zufällige Sitzungskennung pro Tab, verknüpft das Gesendete mit deinem Rekordo-Konto und verbindet einen Klick mit dem Trace im Backend.",
+        short: "Ergänzt eine zufällige Sitzungskennung pro Tab, dein Konto und den Backend-Trace.",
+      },
+      nothing: {
+        title: "Nichts",
+        body: "Es verlassen keine Diagnosedaten dein Gerät. Wir fragen nicht noch einmal.",
+        short: "Es verlassen keine Diagnosedaten dein Gerät.",
+      },
+    },
+    detail: {
+      title: "Was die Stufen erfassen",
+      lead: "Zwei Stufen, klar benannt.",
+      anonymousHeading: "Nur anonym",
+      anonymous1: "JavaScript-Fehler und Absturzberichte samt der Seite, auf der sie auftraten",
+      anonymous2: "Ladezeiten und Reaktionszeiten",
+      anonymous3: "Browser- und Gerätetyp",
+      anonymous4:
+        "Keine Sitzungskennung und kein Kontobezug, sodass sich zwei Fehler von dir nicht miteinander verbinden lassen",
+      fullHeading: "Vollständig ergänzt",
+      full1:
+        "Eine Sitzungskennung, zufällig erzeugt für den Tab, in dem du bist, und gelöscht, sobald dieser Tab schließt",
+      full2: "Eine Verknüpfung mit deinem angemeldeten Rekordo-Konto",
+      full3:
+        "Die Seiten, die du in dieser Sitzung besuchst, und den Backend-Trace hinter einer Aktion im Browser",
+      eitherHeading: "In beiden Fällen",
+      either1:
+        "Gesendet an Grafana Cloud in der EU-Region und dort gespeichert. Nicht verkauft und nie für Werbung genutzt.",
+      either2:
+        "Deine IP-Adresse wird nicht gespeichert. Sie dient nur kurz dazu, eine grobe Region zu bestimmen, und wird dann verworfen; die Standortbestimmung ist abgeschaltet.",
+      either3:
+        "Keine Titel, keine Notizen, keine Preise, keine Fotos. Deine Sammlung ist auf keiner Stufe Teil davon.",
+      back: "Zurück zur Auswahl",
+    },
+    ack: {
+      anonymousTitle: "Anonyme Diagnose ist aktiv. Danke.",
+      anonymousBody:
+        "Keine Sitzungskennung, kein Kontobezug. Einstellungen · Datenschutz ändert die Stufe.",
+      fullTitle: "Vollständige Diagnose ist aktiv. Danke.",
+      fullBody:
+        "Sitzungskennung und Kontobezug inbegriffen. Einstellungen · Datenschutz ändert die Stufe.",
+      nothingTitle: "Es wird nichts erfasst.",
+      nothingBody:
+        "Wir fragen nicht noch einmal. Einstellungen · Datenschutz, falls du es dir anders überlegst.",
+      undo: "Rückgängig",
+      dismiss: "Schließen",
+    },
+    settings: {
+      section: "Datenschutz",
+      title: "Diagnose",
+      body: "Was Rekordo uns melden darf, wenn etwas kaputtgeht.",
+      receiptAnonymous:
+        "Nur anonym seit {{date}}. Tippe eine andere Zeile an und es ändert sich sofort.",
+      receiptFull:
+        "Vollständig seit {{date}}. Löschen wird nur auf dieser Stufe angeboten, weil nur sie deine Daten finden kann.",
+      receiptNothing: "Nichts, gewählt am {{date}}. Der Hinweis fragt nicht noch einmal.",
+      receiptUnset: "Noch nicht beantwortet. Der Hinweis fragt einmal.",
+      deleteTitle: "Gesendetes löschen",
+      deleteBody: "Bittet Grafana, die Telemetrie dieses Kontos zu verwerfen",
+    },
   },
   common: {
     backTo: "Zurück zu {{page}}",

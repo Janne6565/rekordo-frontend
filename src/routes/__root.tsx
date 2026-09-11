@@ -1,5 +1,6 @@
 import { SignInConflictGate } from "@/features/auth/SignInConflict";
 import { UndoProvider } from "@/features/detail/UndoDelete";
+import { ConsentSlip } from "@/features/diagnostics";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
@@ -16,6 +17,13 @@ export const Route = createRootRoute({
        * away from /signin and cannot be escaped by one.
        */}
       <SignInConflictGate />
+      {/*
+       * Above the router as well, and for the plainest reason of the three: the question is
+       * about this browser, not about any one screen. It is asked on the first visit
+       * whether or not anybody is signed in, because consent has to precede collection and
+       * a visitor without an account is no less entitled to be asked.
+       */}
+      <ConsentSlip />
     </UndoProvider>
   ),
 });

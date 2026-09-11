@@ -5,8 +5,10 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import "@/i18n/config";
 import "@/styles.css";
+import { startDiagnostics } from "@/diagnostics/faro";
 import { assertMotionTokensMatchStyles } from "@/lib/motion";
 import { StoreProvider } from "@/local/StoreProvider";
+import { readDiagnosticsLevel } from "@/local/diagnosticsConsent";
 import { routeTree } from "@/routeTree.gen";
 import { store } from "@/store";
 import { SessionBootstrap } from "@/sync/SessionBootstrap";
@@ -15,6 +17,11 @@ import { SessionBootstrap } from "@/sync/SessionBootstrap";
 // because a stylesheet cannot import TypeScript. In development, disagreeing about them is
 // an error rather than something to notice months later in a screen recording.
 if (import.meta.env.DEV) assertMotionTokensMatchStyles();
+
+// Before React, so an error thrown during the first render is still caught. Reads the
+// stored consent synchronously and does nothing at all if this browser has not answered,
+// or answered NOTHING, or the build was given no collector URL.
+startDiagnostics(readDiagnosticsLevel());
 
 /**
  * `@` is left as itself in a path.

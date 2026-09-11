@@ -4,6 +4,7 @@ import { Card, LinkRow, Row, SectionTitle } from "@/components/rows";
 import { Toggle, buttonClassName } from "@/components/ui";
 import { CURRENCIES, currencyChipLabel } from "@/domain/currency";
 import { formatRelativeTime } from "@/domain/relativeTime";
+import { DiagnosticsSettings } from "@/features/diagnostics";
 import { useSettingsLogic, useStorageEstimate } from "@/features/settings/useSettingsLogic";
 import { cn } from "@/lib/utils";
 import type { AppLanguage } from "@/local/settings";
@@ -154,6 +155,8 @@ export function SettingsPage() {
               </Card>
             </>
           )}
+
+          <DiagnosticsSettings />
 
           <SectionTitle>{t("settings.section.storageSync")}</SectionTitle>
           <Card>

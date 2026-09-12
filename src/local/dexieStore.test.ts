@@ -46,6 +46,7 @@ function copy(id: string, releaseId: string, overrides: Partial<Copy> = {}): Cop
     notesConflict: null,
     rating: null,
     hidden: false,
+    sortIndex: null,
     createdAt: 0,
     deletedAt: null,
     fieldClocks: {} as Copy["fieldClocks"],

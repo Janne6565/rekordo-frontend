@@ -168,6 +168,8 @@ export type SyncCopyDtoRating = number | null;
 
 export type SyncCopyDtoHidden = boolean | null;
 
+export type SyncCopyDtoSortIndex = number | null;
+
 export type SyncCopyDtoCreatedAt = number | null;
 
 export type SyncCopyDtoDeletedAt = number | null;
@@ -198,6 +200,7 @@ export interface SyncCopyDto {
   notesConflict?: SyncCopyDtoNotesConflict;
   rating?: SyncCopyDtoRating;
   hidden?: SyncCopyDtoHidden;
+  sortIndex?: SyncCopyDtoSortIndex;
   createdAt?: SyncCopyDtoCreatedAt;
   deletedAt?: SyncCopyDtoDeletedAt;
   fieldClocks?: SyncCopyDtoFieldClocks;

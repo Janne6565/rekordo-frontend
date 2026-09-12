@@ -1,13 +1,13 @@
 import { ReleaseArt } from "@/components/ReleaseArt";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui";
+import { useCarry } from "@/components/useCarry";
 import { formatRelativeTime } from "@/domain/relativeTime";
 import { AddDialog } from "@/features/add/AddDialog";
 import { CopyDetailsDialog } from "@/features/copy/CopyDetailsDialog";
 import { useCollectionStats } from "@/features/library/useLibraryLogic";
 import { WishDetailsDialog } from "@/features/wishlist/WishDetailsDialog";
 import { WishDialog } from "@/features/wishlist/WishDialog";
-import { useRowDrag } from "@/features/wishlist/useRowDrag";
 import { useWishlistLogic } from "@/features/wishlist/useWishlistLogic";
 import { cn } from "@/lib/utils";
 import type { WishSort, WishlistItem } from "@janne6565/rekordo-shared";
@@ -53,7 +53,15 @@ export function WishlistPage() {
   /** The entry being read (16j). The list stays behind it — it is the workspace. */
   const [reading, setReading] = useState<string | null>(null);
   const navigate = useNavigate();
-  const drag = useRowDrag(logic.reorder);
+  /**
+   * A drag reorders the *whole* list, and an index into a narrowed one points at the wrong
+   * entry — so a filtered list is read rather than arranged.
+   */
+  const carry = useCarry({
+    count: logic.items.length,
+    enabled: !logic.filtering,
+    onDrop: logic.reorder,
+  });
 
   return (
     <AppShell stats={stats}>
@@ -128,15 +136,10 @@ export function WishlistPage() {
                 item={item}
                 coverArtUrl={logic.coverOf(item)}
                 pictureSrc={logic.pictureOf(item)}
-                draggable={!logic.filtering && drag.isDraggable(index)}
-                lifted={drag.isLifted(index)}
-                // A drag reorders the *whole* list, and an index into a narrowed one
-                // points at the wrong entry — so the handle goes quiet until the box is
-                // empty again rather than silently moving somebody else's row.
-                onArm={logic.filtering ? null : () => drag.arm(index)}
-                onLift={() => drag.lift(index)}
-                onDragEnd={drag.putDown}
-                onDrop={() => drag.dropOn(index)}
+                carried={carry.carrying === index}
+                arrangeable={!logic.filtering}
+                style={carry.styleFor(index)}
+                carryProps={carry.itemProps(index)}
                 onOpen={() => setReading(item.id)}
                 onFound={() => setHunting(item)}
                 language={i18n.language}
@@ -264,13 +267,13 @@ interface RowProps {
   readonly coverArtUrl: string | null;
   /** The picture uploaded for this entry, for a record no catalogue has. */
   readonly pictureSrc: string | null;
-  readonly draggable: boolean;
-  readonly lifted: boolean;
-  /** Null while a search term narrows the list, which is when a drag cannot be trusted. */
-  readonly onArm: (() => void) | null;
-  readonly onLift: () => void;
-  readonly onDragEnd: () => void;
-  readonly onDrop: () => void;
+  /** True for the row in the air. */
+  readonly carried: boolean;
+  /** False while a search term narrows the list, which is when a drag cannot be trusted. */
+  readonly arrangeable: boolean;
+  /** Where the carry wants this row drawn: its own offset, or a neighbour's shift. */
+  readonly style: React.CSSProperties;
+  readonly carryProps: ReturnType<ReturnType<typeof useCarry>["itemProps"]>;
   /** Opens the entry (16j). The whole row, because everything on it is about one entry. */
   readonly onOpen: () => void;
   /** The hunt's ending, kept on the row: it is what the list is for. */
@@ -282,12 +285,10 @@ function Row({
   item,
   coverArtUrl,
   pictureSrc,
-  draggable,
-  lifted,
-  onArm,
-  onLift,
-  onDragEnd,
-  onDrop,
+  carried,
+  arrangeable,
+  style,
+  carryProps,
   onOpen,
   onFound,
   language,
@@ -295,9 +296,10 @@ function Row({
   const { t } = useTranslation();
 
   return (
-    // The row opens the entry, and is draggable, but a drag is only *started* by the
-    // handle: a row that lifts wherever you happen to press makes reading impossible.
-    // biome-ignore lint/a11y/useSemanticElements: a button cannot hold the drag handle
+    // The row opens the entry and is also what you pick up — there is no handle any more,
+    // because nothing is swallowing the press: a carry only starts once the pointer has
+    // moved, so a click is still a click and reading the list is unaffected.
+    // biome-ignore lint/a11y/useSemanticElements: a button cannot hold a row of controls
     <div
       role="button"
       tabIndex={0}
@@ -307,40 +309,32 @@ function Row({
         event.preventDefault();
         onOpen();
       }}
-      draggable={draggable}
-      onDragStart={(event) => {
-        // Firefox starts no drag at all for a dragstart that carries no data, so the row
-        // would arm and then simply never lift.
-        event.dataTransfer.setData("text/plain", item.id);
-        onLift();
-      }}
-      onDragOver={(event) => event.preventDefault()}
-      onDrop={onDrop}
-      onDragEnd={onDragEnd}
+      {...carryProps}
+      style={{ gridTemplateColumns: GRID, ...style }}
       className={cn(
         // A flex row of 72px under 640px, the table above it (24d). The inline grid
         // template below is inert while this is a flex container.
         "group flex min-h-[72px] cursor-pointer items-center gap-3 rounded-lg border-b border-line px-1 py-2.5",
         "sm:grid sm:min-h-0 sm:gap-x-3 sm:px-2",
-        "transition-[opacity,background-color] hover:bg-canvas/60",
+        "transition-[box-shadow,background-color]",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink",
-        lifted && "opacity-40",
+        // A carried row is lifted off the page rather than faded out of it: it is the
+        // thing being moved, so it should be the thing you can see.
+        carried ? "bg-paper shadow-[0_14px_26px_rgb(25_23_19/0.22)]" : "hover:bg-canvas/60",
       )}
-      style={{ gridTemplateColumns: GRID }}
     >
-      <button
-        type="button"
-        // Mouse-down rather than a click: the drag has to be armed before the browser's
-        // own dragstart fires, and dragstart never waits for a click to complete.
-        // Stopped here: pressing the handle arms a drag, it does not open the entry.
-        onMouseDown={onArm ?? undefined}
-        onClick={(event) => event.stopPropagation()}
-        disabled={onArm === null}
-        aria-label={t("wishlist.reorder")}
-        className="hidden cursor-grab text-ink-subtle opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-default disabled:opacity-0 sm:block"
+      {/* The grip is a cue now, not a control: the row is picked up from anywhere on it,
+          and a mark that says so is worth more than a target that is the only way in. */}
+      <span
+        aria-hidden
+        className={cn(
+          "hidden text-ink-subtle opacity-0 transition-opacity sm:block",
+          arrangeable && "group-hover:opacity-100",
+          carried && "opacity-100",
+        )}
       >
-        <GripVertical size={15} strokeWidth={1.75} aria-hidden />
-      </button>
+        <GripVertical size={15} strokeWidth={1.75} />
+      </span>
 
       <div className="h-12 w-[58px] flex-none sm:h-11 sm:w-[53px]">
         {/* The wanted format is the silhouette, not the artwork: an entry for the vinyl of

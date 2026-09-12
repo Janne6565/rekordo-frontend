@@ -321,6 +321,8 @@ const enCommon = {
       addedDesc: "date added",
       artistAsc: "artist",
       yearDesc: "year",
+      /* Only ever shown once a record has been dragged — it is the order you built. */
+      manual: "your order",
     },
     empty: {
       title: "Nothing here yet",
@@ -501,7 +503,7 @@ const enCommon = {
     fromYourWishlist: "from your wishlist",
     yourNote: "Your note: {{note}}",
     dragHint:
-      "Drag a row by its handle to sort by hand. Doing so switches the list to \u201cYour order\u201d until you pick a sort again.",
+      "Drag a row to sort by hand. Doing so switches the list to \u201cYour order\u201d until you pick a sort again.",
     column: {
       release: "Release",
       format: "Format",
@@ -1729,6 +1731,7 @@ const deCommon: CommonSchema = {
       addedDesc: "Hinzugefügt",
       artistAsc: "Künstler",
       yearDesc: "Jahr",
+      manual: "deine Reihenfolge",
     },
     empty: {
       title: "Noch nichts da",
@@ -1907,7 +1910,7 @@ const deCommon: CommonSchema = {
     fromYourWishlist: "von deiner Wunschliste",
     yourNote: "Deine Notiz: {{note}}",
     dragHint:
-      "Zieh eine Zeile am Griff, um von Hand zu sortieren. Danach steht die Liste auf \u201eDeine Reihenfolge\u201c, bis du wieder eine Sortierung wählst.",
+      "Zieh eine Zeile, um von Hand zu sortieren. Danach steht die Liste auf \u201eDeine Reihenfolge\u201c, bis du wieder eine Sortierung wählst.",
     column: {
       release: "Veröffentlichung",
       format: "Format",

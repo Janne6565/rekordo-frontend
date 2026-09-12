@@ -169,6 +169,10 @@ function toDto(copy: Copy): SyncCopyDto {
     // Always sent, never `?? undefined`: an omitted boolean would leave a server that had
     // been told `true` never hearing it undone. Same reasoning as `catalogArt` above.
     hidden: copy.hidden,
+    // Null is a real value here — "never placed by hand" — and it has to travel, or a
+    // shelf whose arrangement was cleared on one device would never be cleared anywhere
+    // else. `?? undefined` would drop exactly that.
+    sortIndex: copy.sortIndex,
     createdAt: copy.createdAt,
     deletedAt: copy.deletedAt ?? undefined,
     fieldClocks: copy.fieldClocks,
@@ -214,6 +218,8 @@ export function fromDto(dto: SyncCopyDto): Copy | null {
     rating: dto.rating ?? null,
     // Absent means a server older than the field, which reads as not hidden.
     hidden: dto.hidden ?? false,
+    // Absent means a server older than the field, which reads as never placed by hand.
+    sortIndex: dto.sortIndex ?? null,
     createdAt: dto.createdAt,
     deletedAt: dto.deletedAt ?? null,
     fieldClocks: dto.fieldClocks as Copy["fieldClocks"],

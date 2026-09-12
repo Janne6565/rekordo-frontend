@@ -3,6 +3,7 @@ import { TileRating } from "@/components/TileRating";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, Skeleton } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
+import { useCarry } from "@/components/useCarry";
 import { AddDialog } from "@/features/add/AddDialog";
 import { ConfirmStrip } from "@/features/auth/ConfirmStrip";
 import { SyncOutcomeStrip } from "@/features/auth/SyncOutcomeStrip";
@@ -387,7 +388,12 @@ function LibraryBody({
   collectionEmpty,
   onAdd,
   marked,
-}: Pick<ReturnType<typeof useLibraryLogic>, "loading" | "failed" | "rows" | "collectionEmpty"> & {
+  arrangeable,
+  arrange,
+}: Pick<
+  ReturnType<typeof useLibraryLogic>,
+  "loading" | "failed" | "rows" | "collectionEmpty" | "arrangeable" | "arrange"
+> & {
   readonly onAdd: () => void;
   readonly marked: string | null;
 }) {
@@ -407,7 +413,7 @@ function LibraryBody({
   if (rows.length === 0)
     return <p className="mc-cross pt-8 text-sm text-ink-muted">{t("library.noMatches")}</p>;
 
-  return <LibraryGrid rows={rows} marked={marked} />;
+  return <LibraryGrid rows={rows} marked={marked} arrangeable={arrangeable} arrange={arrange} />;
 }
 
 /**
@@ -417,9 +423,23 @@ function LibraryBody({
 function LibraryGrid({
   rows,
   marked,
-}: { readonly rows: readonly LibraryRow[]; readonly marked: string | null }) {
+  arrangeable,
+  arrange,
+}: {
+  readonly rows: readonly LibraryRow[];
+  readonly marked: string | null;
+  readonly arrangeable: boolean;
+  readonly arrange: (from: number, to: number) => void;
+}) {
   const covers = useCoverPhotos(useMemo(() => rows.map((row) => row.copy.id), [rows]));
   const grid = useRef<HTMLDivElement>(null);
+
+  /**
+   * Dragging *is* how a shelf becomes hand-arranged: there is no separate mode, and the
+   * drop switches the order to "your order" because the order you were looking at when you
+   * picked a record up is the order you meant to adjust.
+   */
+  const carry = useCarry({ count: rows.length, enabled: arrangeable, onDrop: arrange });
 
   /**
    * Settle. The order of the ids is what changes when a filter, a sort or the search term
@@ -432,14 +452,15 @@ function LibraryGrid({
 
   return (
     <div ref={grid} className={GRID_CLASS}>
-      {rows.map((row) => (
-        <GridItem
-          key={row.copy.id}
-          row={row}
-          previewSrc={copyPreviewSrc(row.copy, covers.get(row.copy.id) ?? null)}
-          allowCatalogArt={catalogArtShown(row.copy, true)}
-          marked={marked === row.copy.id}
-        />
+      {rows.map((row, index) => (
+        <div key={row.copy.id} style={carry.styleFor(index)} {...carry.itemProps(index)}>
+          <GridItem
+            row={row}
+            previewSrc={copyPreviewSrc(row.copy, covers.get(row.copy.id) ?? null)}
+            allowCatalogArt={catalogArtShown(row.copy, true)}
+            marked={marked === row.copy.id}
+          />
+        </div>
       ))}
     </div>
   );
@@ -577,6 +598,12 @@ function FilterChip({ active, onClick, label, count }: FilterChipProps) {
 
 function sortKey(
   sort: ReturnType<typeof useLibraryLogic>["sort"],
-): "addedDesc" | "artistAsc" | "yearDesc" {
-  return sort === "ADDED_DESC" ? "addedDesc" : sort === "ARTIST_ASC" ? "artistAsc" : "yearDesc";
+): "addedDesc" | "artistAsc" | "yearDesc" | "manual" {
+  return sort === "ADDED_DESC"
+    ? "addedDesc"
+    : sort === "ARTIST_ASC"
+      ? "artistAsc"
+      : sort === "MANUAL"
+        ? "manual"
+        : "yearDesc";
 }

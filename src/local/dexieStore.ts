@@ -10,6 +10,7 @@ import type {
 } from "@janne6565/rekordo-shared";
 import {
   FORMATS,
+  compareManualOrder,
   copyFormat,
   isManualReleaseId,
   manualRelease,
@@ -327,6 +328,21 @@ export class DexieLocalStore implements LocalStore {
   async putCopy(copy: Copy): Promise<void> {
     await this.db.copies.put(copy);
     await this.markPending(copy.id);
+  }
+
+  /**
+   * A whole arranged shelf, as one write and one pass over the pending list.
+   *
+   * `putCopy` in a loop re-reads and re-writes the pending ids once per record, which is
+   * quadratic — and the first drag on a shelf that has never been arranged writes to
+   * every record on it.
+   */
+  async putCopies(copies: readonly Copy[]): Promise<void> {
+    if (copies.length === 0) return;
+    await this.db.copies.bulkPut([...copies]);
+    const pending = new Set(await this.readPendingIds());
+    for (const copy of copies) pending.add(copy.id);
+    await this.writePendingIds([...pending]);
   }
 
   async adoptCopy(copy: Copy): Promise<void> {
@@ -653,5 +669,10 @@ export function sortCopies(
       );
     case "ADDED_DESC":
       return sorted.sort((a, b) => b.createdAt - a.createdAt);
+    // The shelf as somebody arranged it. The rule is the shared package's, not a second
+    // opinion about it: a copy never placed by hand sorts after every copy that has been,
+    // newest first among those.
+    case "MANUAL":
+      return sorted.sort(compareManualOrder);
   }
 }

@@ -138,7 +138,7 @@ export function SharingPanel() {
         body={settings.ratingsShared ? t("sharing.ratings.on") : t("sharing.ratings.off")}
         control={
           <Toggle
-            checked={settings.ratingsShared ?? false}
+            checked={settings.ratingsShared ?? true}
             onChange={(ratingsShared) => logic.set({ ratingsShared })}
             label={t("sharing.ratings.title")}
           />

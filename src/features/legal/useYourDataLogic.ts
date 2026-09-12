@@ -115,8 +115,9 @@ export function useYourDataLogic() {
       sharing.data.findable === false &&
       sharing.data.pricesPublic === false &&
       // Nullable on the wire: an account saved before ratings could be shared has never
-      // answered this question, and never-answered is off.
-      (sharing.data.ratingsShared ?? false) === false,
+      // answered this question, and the answer it gets by default is on. Reading that as
+      // off would grey this button out on an account that is still showing its stars.
+      (sharing.data.ratingsShared ?? true) === false,
     exportJson: () => exportJson.mutate(),
     exportingJson: exportJson.isPending,
     exportJsonFailed: exportJson.isError,

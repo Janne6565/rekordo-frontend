@@ -21,7 +21,10 @@ export function useSharingLogic() {
         collectionVisibility: next.collectionVisibility ?? "FRIENDS",
         wishlistVisibility: next.wishlistVisibility ?? "FRIENDS",
         pricesPublic: next.pricesPublic ?? false,
-        ratingsShared: next.ratingsShared ?? false,
+        // Matches the server's default. `?? false` here would mean that touching any other
+        // switch, on a settings object that arrived without this field, quietly turned the
+        // stars off.
+        ratingsShared: next.ratingsShared ?? true,
         findable: next.findable ?? true,
       }),
     onSuccess: async (saved) => {

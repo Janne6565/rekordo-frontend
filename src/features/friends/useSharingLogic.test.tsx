@@ -58,9 +58,10 @@ describe("useSharingLogic", () => {
     await waitFor(() => expect(result.current.settings?.ratingsShared).toBe(true));
   });
 
-  it("sends ratings off for an account that has never been asked", async () => {
-    // Nullable on the wire (an account older than the switch). `?? false` is what keeps the
-    // request body's required boolean from going out as null.
+  it("keeps ratings on for an account that has never been asked", async () => {
+    // Nullable on the wire (an account older than the switch). The fallback has to be the
+    // server's own default, or changing a different switch turns the stars off on the way
+    // past.
     read.mockResolvedValue({ ...SETTINGS, ratingsShared: null });
     update.mockImplementation(async (body) => ({ handle: "janne", ...body }));
 
@@ -70,6 +71,6 @@ describe("useSharingLogic", () => {
     act(() => result.current.set({ findable: false }));
 
     await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
-    expect(update.mock.calls[0][0].ratingsShared).toBe(false);
+    expect(update.mock.calls[0][0].ratingsShared).toBe(true);
   });
 });

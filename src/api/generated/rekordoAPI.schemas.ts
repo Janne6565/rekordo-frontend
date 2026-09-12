@@ -29,10 +29,13 @@ export const UpdateSharingRequestWishlistVisibility = {
   PUBLIC: 'PUBLIC',
 } as const;
 
+export type UpdateSharingRequestRatingsShared = boolean | null;
+
 export interface UpdateSharingRequest {
   collectionVisibility: UpdateSharingRequestCollectionVisibility;
   wishlistVisibility: UpdateSharingRequestWishlistVisibility;
   pricesPublic: boolean;
+  ratingsShared?: UpdateSharingRequestRatingsShared;
   findable: boolean;
 }
 
@@ -46,6 +49,8 @@ export type SharingSettingsDtoWishlistVisibility = 'ONLY_ME' | 'FRIENDS' | 'PUBL
 
 export type SharingSettingsDtoPricesPublic = boolean | null;
 
+export type SharingSettingsDtoRatingsShared = boolean | null;
+
 export type SharingSettingsDtoHandleChangesRemaining = number | null;
 
 export interface SharingSettingsDto {
@@ -54,6 +59,7 @@ export interface SharingSettingsDto {
   collectionVisibility?: SharingSettingsDtoCollectionVisibility;
   wishlistVisibility?: SharingSettingsDtoWishlistVisibility;
   pricesPublic?: SharingSettingsDtoPricesPublic;
+  ratingsShared?: SharingSettingsDtoRatingsShared;
   handleChangesRemaining?: SharingSettingsDtoHandleChangesRemaining;
 }
 
@@ -758,6 +764,8 @@ export type SharedCopyDtoCondition = string | null;
 
 export type SharedCopyDtoSleeveCondition = string | null;
 
+export type SharedCopyDtoRating = number | null;
+
 export type SharedCopyDtoPricePaidCents = number | null;
 
 export type SharedCopyDtoCurrency = string | null;
@@ -776,6 +784,7 @@ export interface SharedCopyDto {
   coverTheme?: SharedCopyDtoCoverTheme;
   condition?: SharedCopyDtoCondition;
   sleeveCondition?: SharedCopyDtoSleeveCondition;
+  rating?: SharedCopyDtoRating;
   pricePaidCents?: SharedCopyDtoPricePaidCents;
   currency?: SharedCopyDtoCurrency;
   createdAt?: SharedCopyDtoCreatedAt;

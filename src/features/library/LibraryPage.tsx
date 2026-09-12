@@ -1,4 +1,5 @@
 import { ReleaseArt } from "@/components/ReleaseArt";
+import { TileRating } from "@/components/TileRating";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, Skeleton } from "@/components/ui";
 import { Modal } from "@/components/ui/Modal";
@@ -529,37 +530,6 @@ function GridItem({
       </div>
       <TileRating rating={row.copy.rating} />
     </Link>
-  );
-}
-
-/**
- * The rating on a shelf tile — screen 25a.
- *
- * Glyphs rather than five icon components: at 10px a lucide star is a shape with a stroke
- * width, and five of them per tile across a screenful of records is a lot of SVG for
- * something the eye reads as a bar. Whole stars only — a half at this size is a smudge.
- *
- * An unrated copy draws nothing at all, not five empty stars. Most shelves are rated in
- * patches, and a grid where every third tile carries a row of hollow glyphs reads as a
- * list of things you have failed to do.
- */
-function TileRating({ rating }: { readonly rating: number | null }) {
-  const { t } = useTranslation();
-  if (rating === null || rating <= 0) return null;
-
-  const filled = Math.min(5, Math.round(rating));
-  return (
-    <div
-      className="mt-[3px] flex h-[13px] items-center text-[10px] leading-none tracking-[1.5px]"
-      aria-label={t("editor.rate", { count: filled })}
-    >
-      <span className="text-accent" aria-hidden>
-        {"\u2605".repeat(filled)}
-      </span>
-      <span className="text-ink/20" aria-hidden>
-        {"\u2606".repeat(5 - filled)}
-      </span>
-    </div>
   );
 }
 

@@ -1,3 +1,4 @@
+import { TileRating } from "@/components/TileRating";
 import { Modal, useModalDismiss } from "@/components/ui";
 import type { SharedDetail } from "@/features/friends/useSharedDetailLogic";
 import { Tracklist } from "@/features/tracklist/Tracklist";
@@ -14,6 +15,13 @@ export interface DetailFact {
   readonly value: string;
   /** Condition codes are set in the bordered mono chip the deck uses everywhere. */
   readonly chip?: boolean;
+  /**
+   * A rating cell draws the star bar instead of `value`, which is then only the spoken
+   * text. The stars are two colours, so they cannot be a string in a `<dd>` — but they are
+   * still one fact in one cell, and hoisting them out of the grid would have cost the
+   * sheet its "every field that is missing simply is not there" shape.
+   */
+  readonly stars?: number;
 }
 
 /** Everything the sheet draws, resolved by the shelf that opened it. */
@@ -190,14 +198,17 @@ function Facts({
           <dt className={LABEL}>{fact.label}</dt>
           <dd
             className={cn(
-              "m-0 mt-[5px]",
+              "m-0",
+              fact.stars == null && "mt-[5px]",
               fact.chip === true
                 ? "font-mono text-[11.5px] tracking-[0.06em]"
                 : "text-[13.5px] font-medium",
               phone === true && fact.chip !== true && "text-[13px]",
             )}
           >
-            {fact.chip === true && !(phone === true) ? (
+            {fact.stars != null ? (
+              <TileRating rating={fact.stars} size="detail" />
+            ) : fact.chip === true && !(phone === true) ? (
               <span className="rounded-[5px] border border-ink/15 px-[7px] py-[3px]">
                 {fact.value}
               </span>

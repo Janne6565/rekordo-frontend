@@ -28,6 +28,7 @@ const COPIES: SharedCopyDto[] = [
     sleeveCondition: "NM",
     pricePaidCents: 2400,
     currency: "EUR",
+    rating: 4,
     createdAt: Date.UTC(2024, 2, 4),
   },
   { id: "two", title: "Lanquidity", artistName: "Sun Ra", format: "VINYL" },
@@ -172,6 +173,26 @@ describe("the public shelf", () => {
 
     expect(sheet.queryAllByText("Paid")).toHaveLength(0);
     expect(sheet.getByText("prices hidden")).toBeDefined();
+  });
+
+  it("puts the owner's stars on the tile and in the sheet", () => {
+    shelf("one");
+
+    // Once on the tile behind the sheet, and once in each of the two fact grids the sheet
+    // keeps in the document — so the only useful assertion is that it is there at all.
+    expect(screen.getAllByLabelText("Rate 4 out of 5").length).toBeGreaterThan(1);
+    expect(within(screen.getByRole("dialog")).getAllByText("Rating").length).toBeGreaterThan(0);
+  });
+
+  it("drops the rating row for a copy that arrives without one", () => {
+    // Unrated, or rated by somebody who does not share their ratings: the server sends null
+    // for both and the sheet must not hint at which — no row, no dash, no empty label.
+    shelf("two");
+    const sheet = within(screen.getByRole("dialog"));
+
+    expect(sheet.queryAllByText("Rating")).toHaveLength(0);
+    // Scoped to the sheet: the shelf behind it still holds the rated copy.
+    expect(sheet.queryByLabelText(/Rate \d out of 5/)).toBeNull();
   });
 
   it("stays shut when the link names a record that is not here", () => {

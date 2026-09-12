@@ -106,6 +106,8 @@ const enCommon = {
       },
       pricesShown: "Prices shown.",
       pricesHidden: "Prices hidden.",
+      ratingsShown: "Ratings shown.",
+      ratingsHidden: "Ratings hidden.",
     },
     line: {
       added: "<person>{{name}}</person> added <title>{{title}}</title> to their collection",
@@ -237,6 +239,11 @@ const enCommon = {
       on: "On. What you paid travels with the copies anybody can already see.",
       off: "Off. What you paid stays yours even on a public shelf.",
     },
+    ratings: {
+      title: "Show my ratings",
+      on: "On. Your stars travel with the copies anybody can already see.",
+      off: "Off. A record you rated looks exactly like one you never got round to.",
+    },
     choice: {
       only_me: {
         title: "Only me",
@@ -278,6 +285,7 @@ const enCommon = {
       format: "Format",
       media: "Media",
       sleeve: "Sleeve",
+      rating: "Rating",
       mediaSleeve: "Media / sleeve",
       lookingFor: "Looking for",
       paid: "Paid",
@@ -1507,6 +1515,8 @@ const deCommon: CommonSchema = {
       },
       pricesShown: "Preise sichtbar.",
       pricesHidden: "Preise verborgen.",
+      ratingsShown: "Bewertungen sichtbar.",
+      ratingsHidden: "Bewertungen verborgen.",
     },
     line: {
       added: "<person>{{name}}</person> hat <title>{{title}}</title> zur Sammlung gelegt",
@@ -1639,6 +1649,11 @@ const deCommon: CommonSchema = {
       on: "An. Was du bezahlt hast, reist mit den Exemplaren mit, die ohnehin sichtbar sind.",
       off: "Aus. Was du bezahlt hast, bleibt deine Sache, auch auf einem öffentlichen Regal.",
     },
+    ratings: {
+      title: "Meine Bewertungen zeigen",
+      on: "An. Deine Sterne reisen mit den Exemplaren mit, die ohnehin sichtbar sind.",
+      off: "Aus. Eine bewertete Platte sieht dann genauso aus wie eine, zu der du nie kamst.",
+    },
     choice: {
       only_me: {
         title: "Nur ich",
@@ -1679,6 +1694,7 @@ const deCommon: CommonSchema = {
       format: "Format",
       media: "Tonträger",
       sleeve: "Hülle",
+      rating: "Bewertung",
       mediaSleeve: "Tonträger / Hülle",
       lookingFor: "Gesucht als",
       paid: "Bezahlt",

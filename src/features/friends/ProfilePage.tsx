@@ -1,5 +1,6 @@
 import type { SharedCopyDto, SharedWishDto } from "@/api/generated/rekordoAPI.schemas";
 import { ReleaseArt } from "@/components/ReleaseArt";
+import { TileRating } from "@/components/TileRating";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, PulsingDots, Skeleton } from "@/components/ui";
 import { formatMoney } from "@/features/detail/DetailPage";
@@ -280,6 +281,18 @@ function copyDetail(
   );
   push("media", t("profile.detail.media"), conditionCode(copy?.condition), true);
   push("sleeve", t("profile.detail.sleeve"), conditionCode(copy?.sleeveCondition), true);
+  /*
+   * The owner's own verdict, and the server has already decided whether it is ours to read:
+   * a copy whose owner keeps ratings to themselves arrives with rating null, exactly like an
+   * unrated one. Both drop the row, and nothing on this page says which of the two it was.
+   */
+  if (copy?.rating != null && copy.rating > 0)
+    facts.push({
+      key: "rating",
+      label: t("profile.detail.rating"),
+      value: t("editor.rate", { count: Math.min(5, Math.round(copy.rating)) }),
+      stars: copy.rating,
+    });
   push(
     "paid",
     t("profile.detail.paid"),
@@ -620,6 +633,10 @@ function CollectionGrid({
                 .filter(Boolean)
                 .join(" · ")}
             </span>
+            {/* Same bar as your own shelf (25a), and it arrives already gated: the server
+                sends no rating at all unless the owner shares them and you may see the
+                shelf, so there is nothing to check here. */}
+            <TileRating rating={copy.rating} />
           </button>
         ))}
       </div>

@@ -66,6 +66,7 @@ export function useYourDataLogic() {
         collectionVisibility: "ONLY_ME",
         wishlistVisibility: "ONLY_ME",
         pricesPublic: false,
+        ratingsShared: false,
         findable: false,
       }),
     onSuccess: async (saved) => {
@@ -112,7 +113,10 @@ export function useYourDataLogic() {
       sharing.data.collectionVisibility === "ONLY_ME" &&
       sharing.data.wishlistVisibility === "ONLY_ME" &&
       sharing.data.findable === false &&
-      sharing.data.pricesPublic === false,
+      sharing.data.pricesPublic === false &&
+      // Nullable on the wire: an account saved before ratings could be shared has never
+      // answered this question, and never-answered is off.
+      (sharing.data.ratingsShared ?? false) === false,
     exportJson: () => exportJson.mutate(),
     exportingJson: exportJson.isPending,
     exportJsonFailed: exportJson.isError,

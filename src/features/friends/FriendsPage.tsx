@@ -474,7 +474,8 @@ function ShelfSummary({ logic }: { readonly logic: Logic }) {
       </div>
       <div className="mt-1 text-[11.5px] leading-relaxed text-ink-muted">
         {t(SHELF_WISHLIST_KEYS[sharing.wishlistVisibility ?? "FRIENDS"])}{" "}
-        {sharing.pricesPublic ? t("friends.shelf.pricesShown") : t("friends.shelf.pricesHidden")}
+        {sharing.pricesPublic ? t("friends.shelf.pricesShown") : t("friends.shelf.pricesHidden")}{" "}
+        {sharing.ratingsShared ? t("friends.shelf.ratingsShown") : t("friends.shelf.ratingsHidden")}
       </div>
       <Link
         to="/account"

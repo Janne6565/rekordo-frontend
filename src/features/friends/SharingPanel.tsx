@@ -129,6 +129,22 @@ export function SharingPanel() {
         }
       />
 
+      {/* Under the prices row and shaped exactly like it, because it is the same kind of
+          answer: a fact the copies already carry, which travels with them or does not.
+          Nothing here promises the other side can tell an unrated record from a hidden
+          one — they cannot, and that is the point of the switch. */}
+      <Row
+        title={t("sharing.ratings.title")}
+        body={settings.ratingsShared ? t("sharing.ratings.on") : t("sharing.ratings.off")}
+        control={
+          <Toggle
+            checked={settings.ratingsShared ?? false}
+            onChange={(ratingsShared) => logic.set({ ratingsShared })}
+            label={t("sharing.ratings.title")}
+          />
+        }
+      />
+
       <p className="flex items-start gap-2 rounded-lg bg-paper px-3 py-2.5 text-[11.5px] leading-relaxed text-ink-muted">
         <EyeOff size={14} strokeWidth={1.75} aria-hidden className="mt-0.5 flex-none" />
         {t("sharing.perCopyNote")}

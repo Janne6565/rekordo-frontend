@@ -21,6 +21,7 @@ export function useSharingLogic() {
         collectionVisibility: next.collectionVisibility ?? "FRIENDS",
         wishlistVisibility: next.wishlistVisibility ?? "FRIENDS",
         pricesPublic: next.pricesPublic ?? false,
+        ratingsShared: next.ratingsShared ?? false,
         findable: next.findable ?? true,
       }),
     onSuccess: async (saved) => {
@@ -37,7 +38,7 @@ export function useSharingLogic() {
    *
    * Every control here is a single answer to a single question, and a privacy screen with
    * unsaved state is one where somebody can close the tab believing they turned something
-   * off. The whole record is sent each time because the endpoint takes all four.
+   * off. The whole record is sent each time because the endpoint takes every answer at once.
    */
   const set = useCallback(
     (patch: Partial<SharingSettingsDto>) => {

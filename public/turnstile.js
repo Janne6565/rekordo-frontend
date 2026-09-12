@@ -38,9 +38,18 @@
 
   let siteKey = null;
   let scriptReady = false;
+  /* Both halves below can arrive twice: Cloudflare's api.js looks for the onload hook
+     the moment it lands, and when it does not find one yet -- which it no longer does,
+     now that this file is fetched rather than parsed inline -- it calls it again later.
+     Rendering into a container that already holds a widget does not replace it: the old
+     widget stays, callback and all, and only the second attempt is rejected. Harmless
+     here because both renders ask for the same action, but the way that fails when it
+     does fail is a solved challenge reporting a token minted for something else. */
+  let drawn = false;
 
   function drawWhenReady() {
-    if (!scriptReady || siteKey === null) return;
+    if (drawn || !scriptReady || siteKey === null) return;
+    drawn = true;
     try {
       window.turnstile.render(document.getElementById("widget"), {
         sitekey: siteKey,

@@ -1,6 +1,6 @@
 import { useStore } from "@/local/StoreProvider";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 /**
  * Each copy's own photo, as something an `<img>` can show.
@@ -14,13 +14,22 @@ export function useCoverPhotos(copyIds: readonly string[]): ReadonlyMap<string, 
   const { store } = useStore();
   const [urls, setUrls] = useState<ReadonlyMap<string, string>>(() => new Map());
 
-  // Joined, so the query key changes only when the set of copies on screen does — a new
-  // array of the same ids on every render would otherwise refetch forever.
-  const key = copyIds.join(",");
+  /**
+   * The copies on screen as a *set*: sorted and de-duplicated, then joined for the key.
+   *
+   * Sorting is the whole point, and the joining alone used to be it. The key was the ids
+   * in the order the shelf happened to be in, so arranging the shelf by hand made it a
+   * different query — and this one does not merely refetch. A new `photos.data` re-runs
+   * the effect below, whose cleanup revokes every object URL it made, so each `<img>` had
+   * its src pulled out from under it and genuinely reloaded. A drag changes the order and
+   * never the set, so with the set as the key nothing happens at all.
+   */
+  const ids = useMemo(() => [...new Set(copyIds)].sort(), [copyIds]);
+  const key = ids.join(",");
 
   const photos = useQuery({
     queryKey: ["cover-photos", key],
-    queryFn: () => store.listCoverPhotos(copyIds),
+    queryFn: () => store.listCoverPhotos(ids),
   });
 
   useEffect(() => {

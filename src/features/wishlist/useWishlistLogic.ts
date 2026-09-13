@@ -51,7 +51,29 @@ export function useWishlistLogic() {
    * at its longest. Making it wait would be inventing a lag to look busy.
    */
   const [search, setSearch] = useState("");
-  const shown = useMemo(() => filterWishlist(ordered, search), [ordered, search]);
+
+  /**
+   * The order a drop just built, held until the store has caught up.
+   *
+   * Writing a row per entry and re-reading the list is time the row would otherwise spend
+   * back where it started — the frame that makes a drop look like it was refused. Applied
+   * synchronously when the record is put down, so it lands in the same React commit as the
+   * carry clearing itself and the swap is invisible. The shelf holds its drop the same way.
+   */
+  const [dropped, setDropped] = useState<readonly string[] | null>(null);
+  const held = useMemo(() => {
+    if (dropped === null) return ordered;
+    const byId = new Map(ordered.map((item) => [item.id, item]));
+    const seen = new Set(dropped);
+    return [
+      ...dropped
+        .map((id) => byId.get(id))
+        .filter((item): item is WishlistItem => item !== undefined),
+      ...ordered.filter((item) => !seen.has(item.id)),
+    ];
+  }, [ordered, dropped]);
+
+  const shown = useMemo(() => filterWishlist(held, search), [held, search]);
 
   /**
    * The albums on the list, sorted and de-duplicated so the query key is the *set* rather
@@ -132,16 +154,18 @@ export function useWishlistLogic() {
    * which reads as the app refusing to do what it was just told.
    */
   const reorder = useMutation({
-    mutationFn: async ({ from, to }: { readonly from: number; readonly to: number }) => {
-      const next = moveWish(ordered, from, to);
+    mutationFn: async ({ next }: { readonly next: readonly WishlistItem[] }) => {
       for (const { item, sortIndex } of manualOrderWrites(next)) {
         await store.putWishlistItem(applyWishPatch(item, { sortIndex }, clock));
       }
       await writeWishlistSort(store, "MANUAL");
     },
-    onSuccess: async () => {
+    // `onSettled` rather than `onSuccess`: a write that failed still has to let the held
+    // order go, or the list shows a move that never happened until the page is reloaded.
+    onSettled: async () => {
       await invalidate();
       await queryClient.invalidateQueries({ queryKey: ["wishlistSort"] });
+      setDropped(null);
     },
   });
 
@@ -203,7 +227,11 @@ export function useWishlistLogic() {
     /** "Your order" is only a thing the menu names once a drag has produced one. */
     manual: hasManualOrder(items),
     setSort: (next: WishSort) => chooseSort.mutate(next),
-    reorder: (from: number, to: number) => reorder.mutate({ from, to }),
+    reorder: (from: number, to: number) => {
+      const next = moveWish(held, from, to);
+      setDropped(next.map((item) => item.id));
+      reorder.mutate({ next });
+    },
     reordering: reorder.isPending,
     edit: (item: WishlistItem, patch: WishPatch) => edit.mutate({ item, patch }),
     remove: (item: WishlistItem) => remove.mutate(item),

@@ -98,9 +98,7 @@ export function useLibraryLogic() {
    */
   const [dropped, setDropped] = useState<readonly string[] | null>(null);
   const arrange = useMutation({
-    mutationFn: async ({ from, to }: { readonly from: number; readonly to: number }) => {
-      const next = moveCopy(rows, from, to);
-      setDropped(next.map((row) => row.copy.id));
+    mutationFn: async ({ next }: { readonly next: readonly LibraryRow[] }) => {
       await store.putCopies(
         libraryOrderWrites(next.map((row) => row.copy)).map(({ copy, sortIndex }) =>
           applyCopyPatch(copy, { sortIndex }, clock),
@@ -154,11 +152,22 @@ export function useLibraryLogic() {
     setSort,
     /** Whether "Your order" is a thing the controls can offer yet. */
     arranged: useMemo(() => hasArrangedOrder(all.map((row) => row.copy)), [all]),
+    /**
+     * The held order is applied *here*, synchronously, and not inside the mutation.
+     *
+     * This runs while the record is being put down and the carry is clearing itself, so
+     * both land in one React commit and the swap is invisible. Set inside `mutationFn`
+     * instead it is a later commit, and the shelf shows the old order in between: the
+     * record blinks back to where it came from and the row flashes. Only the order is
+     * synchronous; the write behind it is not.
+     */
     arrange: useCallback(
       (from: number, to: number) => {
-        arrange.mutate({ from, to });
+        const next = moveCopy(rows, from, to);
+        setDropped(next.map((row) => row.copy.id));
+        arrange.mutate({ next });
       },
-      [arrange],
+      [arrange, rows],
     ),
     /**
      * Whether a record may be picked up at all — the whole shelf, or none of it. A

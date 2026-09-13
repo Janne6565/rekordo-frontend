@@ -330,6 +330,11 @@ const enCommon = {
       action: "Add your first item",
     },
     noMatches: "No items match this filter.",
+    /* The phone says "Long press on an entry to reorder", because that is how a record
+       is picked up there. Here a pointer just drags, and a touch screen falls back to the
+       same hold — so the note names the gesture rather than the device. */
+    dragHint: "Drag an entry to reorder",
+    dragWhileFiltered: "Clear the filters to reorder",
     loading: "loading…",
   },
   roll: {
@@ -502,8 +507,9 @@ const enCommon = {
     oneEntryHint: "One entry per release. Adding it twice just reopens this sheet.",
     fromYourWishlist: "from your wishlist",
     yourNote: "Your note: {{note}}",
-    dragHint:
-      "Drag a row to sort by hand. Doing so switches the list to \u201cYour order\u201d until you pick a sort again.",
+    /* No longer "until you pick a sort again" — there is nothing to pick. An order you
+       drag into place is the order the list is in. */
+    dragHint: "Drag an entry to reorder",
     column: {
       release: "Release",
       format: "Format",
@@ -1739,6 +1745,8 @@ const deCommon: CommonSchema = {
       action: "Erstes Exemplar hinzufügen",
     },
     noMatches: "Keine Einträge passen zu diesem Filter.",
+    dragHint: "Zum Umsortieren einen Eintrag ziehen",
+    dragWhileFiltered: "Filter zurücksetzen zum Umsortieren",
     loading: "lädt…",
   },
   roll: {
@@ -1909,8 +1917,7 @@ const deCommon: CommonSchema = {
       "Ein Eintrag pro Veröffentlichung. Ein zweites Mal öffnet nur dieses Fenster wieder.",
     fromYourWishlist: "von deiner Wunschliste",
     yourNote: "Deine Notiz: {{note}}",
-    dragHint:
-      "Zieh eine Zeile, um von Hand zu sortieren. Danach steht die Liste auf \u201eDeine Reihenfolge\u201c, bis du wieder eine Sortierung wählst.",
+    dragHint: "Zum Umsortieren einen Eintrag ziehen",
     column: {
       release: "Veröffentlichung",
       format: "Format",

@@ -2,7 +2,6 @@ import { ReleaseArt } from "@/components/ReleaseArt";
 import { TileRating } from "@/components/TileRating";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button, Skeleton } from "@/components/ui";
-import { Modal } from "@/components/ui/Modal";
 import { useCarry } from "@/components/useCarry";
 import { AddDialog } from "@/features/add/AddDialog";
 import { ConfirmStrip } from "@/features/auth/ConfirmStrip";
@@ -12,7 +11,6 @@ import { useUndo } from "@/features/detail/UndoDelete";
 import {
   type FormatFilter,
   type LibraryRow,
-  type SortKey,
   useLibraryLogic,
 } from "@/features/library/useLibraryLogic";
 import { useCoverPhotos } from "@/features/photos/useCoverPhotos";
@@ -23,8 +21,8 @@ import type { Format } from "@janne6565/rekordo-shared";
 import { catalogArtShown, copyFormat, copyPreviewSrc } from "@janne6565/rekordo-shared";
 import { FORMAT_LABELS } from "@janne6565/rekordo-shared";
 import { Link } from "@tanstack/react-router";
-import { ArrowDownNarrowWide, Check, Dices, Plus, Search, X } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { ArrowUpDown, Dices, Plus, Search, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const FILTERS: readonly FormatFilter[] = ["ALL", "VINYL", "CD", "CASSETTE", "DIGITAL"];
@@ -119,14 +117,14 @@ export function LibraryPage() {
             className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-ink-subtle"
           />
         </label>
-        <button
-          type="button"
-          onClick={logic.cycleSort}
-          className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-muted"
-        >
-          <ArrowDownNarrowWide size={15} strokeWidth={1.75} aria-hidden />
-          {t(`library.sort.${sortKey(logic.sort)}`)}
-        </button>
+        {/* Where the sort control used to cycle. An order you drag into place is not one
+            of three things to pick, so what stands here now is the note saying so — and
+            the other note while the shelf is narrowed, because a position in a narrowed
+            shelf means nothing in the whole one and the drag is refused there. */}
+        <p className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-muted">
+          <ArrowUpDown size={15} strokeWidth={1.75} aria-hidden />
+          {logic.arrangeable ? t("library.dragHint") : t("library.dragWhileFiltered")}
+        </p>
         {/* Left of Add, which is where 27a puts it. Outlined rather than filled: the deck
             draws Roll as the dark button because its toolbar has no other, and two solid
             blocks side by side would make the shelf look like it had two front doors. */}
@@ -254,7 +252,6 @@ function PhoneHeader({
   onAdd,
 }: { readonly logic: ReturnType<typeof useLibraryLogic>; readonly onAdd: () => void }) {
   const { t } = useTranslation();
-  const [sorting, setSorting] = useState(false);
 
   return (
     <div className="sticky top-0 z-10 bg-paper pb-2.5 sm:hidden">
@@ -269,14 +266,6 @@ function PhoneHeader({
             className="min-w-0 flex-1 bg-transparent text-[13.5px] outline-none placeholder:text-ink-subtle"
           />
         </label>
-        <button
-          type="button"
-          onClick={() => setSorting(true)}
-          aria-label={t("library.sortedBy", { sort: t(`library.sort.${sortKey(logic.sort)}`) })}
-          className="flex size-11 flex-none items-center justify-center rounded-xl border border-line bg-surface"
-        >
-          <ArrowDownNarrowWide size={18} strokeWidth={1.9} aria-hidden />
-        </button>
         <button
           type="button"
           onClick={onAdd}
@@ -322,62 +311,9 @@ function PhoneHeader({
       </div>
 
       <div className="px-4 font-mono text-[11px] tracking-[0.05em] text-ink-subtle uppercase">
-        {logic.stats !== undefined &&
-          `${t("you.copies", { count: logic.stats.copyCount })} · ${t(`library.sort.${sortKey(logic.sort)}`)}`}
+        {logic.stats !== undefined && t("you.copies", { count: logic.stats.copyCount })}
       </div>
-
-      {sorting && (
-        <SortSheet
-          sort={logic.sort}
-          onPick={(next) => {
-            logic.setSort(next);
-            setSorting(false);
-          }}
-          onClose={() => setSorting(false)}
-        />
-      )}
     </div>
-  );
-}
-
-/** 24k: sorting is a sheet on a phone, because an icon that cycles cannot say what it did. */
-function SortSheet({
-  sort,
-  onPick,
-  onClose,
-}: {
-  readonly sort: SortKey;
-  readonly onPick: (next: SortKey) => void;
-  readonly onClose: () => void;
-}) {
-  const { t } = useTranslation();
-  const titleId = useId();
-  const options: readonly SortKey[] = ["ADDED_DESC", "ARTIST_ASC", "YEAR_DESC"];
-
-  return (
-    <Modal onClose={onClose} labelledBy={titleId} width="360px" align="center" phoneSheet>
-      <div className="p-4.5">
-        <h2 id={titleId} className="font-serif text-lg leading-none">
-          {t("library.sortTitle")}
-        </h2>
-        <div className="mt-3.5 overflow-hidden rounded-[10px] border border-line">
-          {options.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onPick(option)}
-              className={cn(
-                "flex h-[50px] w-full items-center justify-between border-b border-line px-3.5",
-                "text-sm font-medium last:border-b-0 hover:bg-canvas",
-              )}
-            >
-              {t(`library.sort.${sortKey(option)}`)}
-              {option === sort && <Check size={16} strokeWidth={2.2} className="text-accent" />}
-            </button>
-          ))}
-        </div>
-      </div>
-    </Modal>
   );
 }
 
@@ -594,16 +530,4 @@ function FilterChip({ active, onClick, label, count }: FilterChipProps) {
       )}
     </button>
   );
-}
-
-function sortKey(
-  sort: ReturnType<typeof useLibraryLogic>["sort"],
-): "addedDesc" | "artistAsc" | "yearDesc" | "manual" {
-  return sort === "ADDED_DESC"
-    ? "addedDesc"
-    : sort === "ARTIST_ASC"
-      ? "artistAsc"
-      : sort === "MANUAL"
-        ? "manual"
-        : "yearDesc";
 }

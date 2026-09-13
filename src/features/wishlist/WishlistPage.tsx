@@ -10,20 +10,10 @@ import { WishDetailsDialog } from "@/features/wishlist/WishDetailsDialog";
 import { WishDialog } from "@/features/wishlist/WishDialog";
 import { useWishlistLogic } from "@/features/wishlist/useWishlistLogic";
 import { cn } from "@/lib/utils";
-import type { WishSort, WishlistItem } from "@janne6565/rekordo-shared";
-import { CHOOSABLE_WISH_SORTS, FORMAT_LABELS } from "@janne6565/rekordo-shared";
+import type { WishlistItem } from "@janne6565/rekordo-shared";
+import { FORMAT_LABELS } from "@janne6565/rekordo-shared";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  Check,
-  ChevronDown,
-  Disc3,
-  GripVertical,
-  Heart,
-  Pencil,
-  Plus,
-  Search,
-  Users,
-} from "lucide-react";
+import { Check, Disc3, GripVertical, Heart, Pencil, Plus, Search, Users } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -73,9 +63,8 @@ export function WishlistPage() {
           </p>
         </div>
         <div className="flex flex-none items-center gap-2.5">
-          <SortMenu logic={logic} />
-          {/* The word does not fit beside the sort control at 390px, and the icon is the
-              same one the library's header uses for the same act. */}
+          {/* The word does not fit at 390px, and the icon is the same one the library's
+              header uses for the same act. */}
           <Button
             onClick={() => setSheet(true)}
             aria-label={t("wishlist.addToWishlist")}
@@ -146,7 +135,6 @@ export function WishlistPage() {
               />
             ))}
 
-            {/* Dragging is a pointer gesture; the phone reorders from the sort sheet. */}
             <p className="hidden pt-4 text-[11.5px] text-ink-muted sm:block">
               {logic.filtering ? t("wishlist.dragWhileFiltered") : t("wishlist.dragHint")}
             </p>
@@ -217,49 +205,6 @@ export function WishlistPage() {
  * the box, which is what makes the column gap the space you actually see.
  */
 const GRID = "18px 56px minmax(0,1.5fr) 84px minmax(0,2fr) 96px 112px";
-
-function SortMenu({ logic }: { readonly logic: ReturnType<typeof useWishlistLogic> }) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((was) => !was)}
-        aria-expanded={open}
-        className="flex h-9 items-center gap-1.5 rounded-lg border border-line bg-surface px-3.5 text-[12.5px] font-semibold"
-      >
-        {t(`wishlist.sort.${logic.sort}`)}
-        <ChevronDown size={13} strokeWidth={2} className="text-ink-subtle" aria-hidden />
-      </button>
-      {open && (
-        <div className="absolute right-0 z-20 mt-1.5 w-44 overflow-hidden rounded-lg border border-line bg-surface py-1 shadow-[0_8px_24px_rgba(25,23,19,.14)]">
-          {/* "Your order" is only on the menu once a drag has built one — sorting by an
-              order nobody has made yet would sort by nothing. */}
-          {[...CHOOSABLE_WISH_SORTS, ...(logic.manual ? (["MANUAL"] as const) : [])].map(
-            (option: WishSort) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => {
-                  logic.setSort(option);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center px-3.5 py-2 text-left text-[12.5px] hover:bg-canvas",
-                  logic.sort === option && "font-semibold",
-                )}
-              >
-                {t(`wishlist.sort.${option}`)}
-              </button>
-            ),
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface RowProps {
   readonly item: WishlistItem;

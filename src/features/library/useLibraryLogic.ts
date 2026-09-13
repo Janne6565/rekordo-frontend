@@ -138,15 +138,6 @@ export function useLibraryLogic() {
 
   const handleFormat = useCallback((next: FormatFilter) => setFormat(next), []);
   const handleSearch = useCallback((next: string) => setSearch(next), []);
-  const cycleSort = useCallback(() => {
-    setSort((current) =>
-      current === "ADDED_DESC"
-        ? "ARTIST_ASC"
-        : current === "ARTIST_ASC"
-          ? "YEAR_DESC"
-          : "ADDED_DESC",
-    );
-  }, []);
 
   return {
     rows: shown,
@@ -160,9 +151,6 @@ export function useLibraryLogic() {
     sort,
     handleFormat,
     handleSearch,
-    cycleSort,
-    /** 24b: the phone picks a mode from a sheet rather than cycling through three. */
-    setSort,
     /** Whether "Your order" is a thing the controls can offer yet. */
     arranged: useMemo(() => hasArrangedOrder(all.map((row) => row.copy)), [all]),
     /**

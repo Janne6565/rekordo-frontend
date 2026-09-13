@@ -7,7 +7,6 @@ import type { WishPatch, WishSort, WishlistItem } from "@janne6565/rekordo-share
 import {
   applyWishPatch,
   filterWishlist,
-  hasManualOrder,
   isManualReleaseId,
   manualOrderWrites,
   moveWish,
@@ -142,11 +141,6 @@ export function useWishlistLogic() {
     await queryClient.invalidateQueries({ queryKey: ["wishlist"] });
   };
 
-  const chooseSort = useMutation({
-    mutationFn: (next: WishSort) => writeWishlistSort(store, next),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["wishlistSort"] }),
-  });
-
   /**
    * A drag renumbers every entry and switches the list to "Your order".
    *
@@ -229,8 +223,6 @@ export function useWishlistLogic() {
     loading: wishlist.isLoading,
     sort,
     /** "Your order" is only a thing the menu names once a drag has produced one. */
-    manual: hasManualOrder(items),
-    setSort: (next: WishSort) => chooseSort.mutate(next),
     reorder: (from: number, to: number) => {
       const next = moveWish(held, from, to);
       setDropped(next.map((item) => item.id));

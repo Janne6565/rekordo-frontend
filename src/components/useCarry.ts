@@ -54,6 +54,7 @@ export interface Carry {
   readonly itemProps: (index: number) => {
     readonly onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
     readonly onClickCapture: (event: React.MouseEvent<HTMLElement>) => void;
+    readonly onDragStart: (event: React.DragEvent<HTMLElement>) => void;
     readonly ref: (element: HTMLElement | null) => void;
   };
   /** The index in the air, or null. */
@@ -297,6 +298,22 @@ export function useCarry({
     [carrying, landingAt, offset],
   );
 
+  /**
+   * The browser's own drag, refused.
+   *
+   * Links and images are draggable by default, and a shelf tile is a link wrapped round an
+   * image. Press one with a real mouse and the browser starts dragging *the link* — ghost
+   * image, no-drop cursor — and cancels the pointer stream this hook is listening to, so
+   * nothing could be carried at all. The wishlist never showed it, because its rows are
+   * plain elements; the shelf was completely dead.
+   *
+   * Worth saying plainly: synthetic `PointerEvent`s do not start a native drag, so this
+   * was invisible to every scripted check and only appeared under a real cursor.
+   */
+  const onDragStart = useCallback((event: React.DragEvent<HTMLElement>) => {
+    event.preventDefault();
+  }, []);
+
   const onClickCapture = useCallback((event: React.MouseEvent<HTMLElement>) => {
     if (performance.now() - endedAt.current > 250) return;
     event.preventDefault();
@@ -308,6 +325,7 @@ export function useCarry({
       itemProps: (index: number) => ({
         onPointerDown: onPointerDown(index),
         onClickCapture,
+        onDragStart,
         ref: ref(index),
       }),
       carrying,
@@ -315,6 +333,6 @@ export function useCarry({
       offset,
       styleFor,
     }),
-    [onPointerDown, onClickCapture, ref, carrying, landingAt, offset, styleFor],
+    [onPointerDown, onClickCapture, onDragStart, ref, carrying, landingAt, offset, styleFor],
   );
 }

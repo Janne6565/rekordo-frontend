@@ -1,6 +1,7 @@
 import { lookupAlbumCovers, lookupPressingCovers } from "@/api/releases";
 import { useWishPhotos } from "@/features/wishlist/useWishPhotos";
 import { useStore } from "@/local/StoreProvider";
+import { arrangedAt } from "@/local/arrangedAt";
 import { readWishlistSort, writeWishlistSort } from "@/local/settings";
 import type { WishPatch, WishSort, WishlistItem } from "@janne6565/rekordo-shared";
 import {
@@ -155,8 +156,11 @@ export function useWishlistLogic() {
    */
   const reorder = useMutation({
     mutationFn: async ({ next }: { readonly next: readonly WishlistItem[] }) => {
+      // One stamp for the whole gesture — see `arrangedAt`, and the shelf, which pays the
+      // same cost for the same reason.
+      const at = arrangedAt(clock);
       for (const { item, sortIndex } of manualOrderWrites(next)) {
-        await store.putWishlistItem(applyWishPatch(item, { sortIndex }, clock));
+        await store.putWishlistItem(applyWishPatch(item, { sortIndex }, at));
       }
       await writeWishlistSort(store, "MANUAL");
     },

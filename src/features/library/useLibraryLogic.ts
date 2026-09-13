@@ -1,5 +1,6 @@
 import { useDebouncedSearch } from "@/lib/useDebouncedSearch";
 import { useStore } from "@/local/StoreProvider";
+import { arrangedAt } from "@/local/arrangedAt";
 import { syncOutcomeCleared } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type {
@@ -15,7 +16,7 @@ import {
   libraryOrderWrites,
   moveCopy,
 } from "@janne6565/rekordo-shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
 export type FormatFilter = Format | "ALL";
@@ -71,6 +72,16 @@ export function useLibraryLogic() {
 
   const copiesQuery = useQuery({
     queryKey: ["copies", format, searchTerm, sort],
+    /**
+     * A shelf already on screen stays there while the next one is read.
+     *
+     * The order is part of the key and the first drag switches it, so arranging turned the
+     * shelf into a query with nothing cached and every record disappeared until the read
+     * came back. Keeping the previous rows means the drop's held order stays visible across
+     * that swap, which is the whole point of holding it — and the grid stops blanking when
+     * the sort is changed from the control, or a search term is typed.
+     */
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       const copies = await store.listCopies({ format, search: searchTerm, sort });
       const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
@@ -99,9 +110,11 @@ export function useLibraryLogic() {
   const [dropped, setDropped] = useState<readonly string[] | null>(null);
   const arrange = useMutation({
     mutationFn: async ({ next }: { readonly next: readonly LibraryRow[] }) => {
+      // One stamp for the whole gesture — see `arrangedAt`.
+      const at = arrangedAt(clock);
       await store.putCopies(
         libraryOrderWrites(next.map((row) => row.copy)).map(({ copy, sortIndex }) =>
-          applyCopyPatch(copy, { sortIndex }, clock),
+          applyCopyPatch(copy, { sortIndex }, at),
         ),
       );
       setSort("MANUAL");

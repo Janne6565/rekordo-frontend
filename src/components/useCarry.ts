@@ -47,6 +47,9 @@ export interface CarrySlot {
 /** The default lift: right for anything whose own outline is the thing being held. */
 const CARD_LIFT: CSSProperties = { boxShadow: "0 14px 26px rgb(25 23 19 / 0.22)" };
 
+/** How long after a carry a change to the list is still that carry's doing. */
+const SETTLED_MS = 250;
+
 /** How far a pointer moves before a press counts as a carry. */
 const THRESHOLD_PX = 6;
 /** How long a finger is held before it may carry rather than scroll. Matches the phone. */
@@ -68,6 +71,14 @@ export interface Carry {
   readonly offset: { readonly x: number; readonly y: number };
   /** What this item should be translated by right now, and whether it is the one in the air. */
   readonly styleFor: (index: number) => React.CSSProperties;
+  /**
+   * Whether what just happened to this list was a carry rather than something else.
+   *
+   * Asked by anything that would otherwise animate the change — the grid's settle, which
+   * would put every tile back where it was and walk it forward again, over a rearrangement
+   * the reader has just done with their own hand.
+   */
+  readonly carriedRecently: () => boolean;
 }
 
 export function useCarry({
@@ -327,8 +338,13 @@ export function useCarry({
     event.preventDefault();
   }, []);
 
+  const carriedRecently = useCallback(
+    () => carrying !== null || performance.now() - endedAt.current < SETTLED_MS,
+    [carrying],
+  );
+
   const onClickCapture = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    if (performance.now() - endedAt.current > 250) return;
+    if (performance.now() - endedAt.current > SETTLED_MS) return;
     event.preventDefault();
     event.stopPropagation();
   }, []);
@@ -345,7 +361,18 @@ export function useCarry({
       landingAt,
       offset,
       styleFor,
+      carriedRecently,
     }),
-    [onPointerDown, onClickCapture, onDragStart, ref, carrying, landingAt, offset, styleFor],
+    [
+      onPointerDown,
+      onClickCapture,
+      onDragStart,
+      ref,
+      carrying,
+      landingAt,
+      offset,
+      styleFor,
+      carriedRecently,
+    ],
   );
 }

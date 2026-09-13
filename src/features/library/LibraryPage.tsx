@@ -392,6 +392,10 @@ function LibraryGrid({
   useSettle(
     grid,
     useMemo(() => rows.map((row) => row.copy.id).join(), [rows]),
+    // A shelf the reader has just rearranged by hand is already showing the new order —
+    // the neighbours moved aside as they dragged. Settling it would put every tile back
+    // where it started and walk it forward over ground already covered.
+    carry.carriedRecently,
   );
 
   return (

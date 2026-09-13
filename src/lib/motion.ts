@@ -109,6 +109,17 @@ export function useMark(): {
 export function useSettle(
   container: React.RefObject<HTMLElement | null>,
   dependency: unknown,
+  /**
+   * Asked at the moment the set changes: was this change already shown?
+   *
+   * Settle is a FLIP — it puts every item back where it was and walks it forward. That is
+   * right when an order changes out from under the reader, and wrong when they moved it
+   * themselves: a drag has already carried the neighbours into their new places, so
+   * putting them back is a jump to an arrangement nobody is looking at any more, and the
+   * walk forward re-explains a move that was just watched. True here means measure and say
+   * nothing.
+   */
+  alreadyShown?: () => boolean,
 ): void {
   const reduced = useReducedMotion();
   const previous = useRef<Map<string, DOMRect>>(new Map());
@@ -137,6 +148,7 @@ export function useSettle(
       return;
     }
     if (reduced) return;
+    if (alreadyShown?.() === true) return;
 
     const moves: { element: HTMLElement; dx: number; dy: number }[] = [];
     for (const child of root.querySelectorAll<HTMLElement>("[data-settle-key]")) {
@@ -168,7 +180,7 @@ export function useSettle(
         for (const { element } of moves) element.classList.remove("mc-settling");
       }, DURATION.base);
     });
-  }, [dependency, reduced, container]);
+  }, [dependency, reduced, container, alreadyShown]);
 }
 
 /**

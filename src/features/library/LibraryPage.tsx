@@ -375,7 +375,15 @@ function LibraryGrid({
    * drop switches the order to "your order" because the order you were looking at when you
    * picked a record up is the order you meant to adjust.
    */
-  const carry = useCarry({ count: rows.length, enabled: arrangeable, onDrop: arrange });
+  const carry = useCarry({
+    count: rows.length,
+    enabled: arrangeable,
+    onDrop: arrange,
+    // No shadow. A tile is a sleeve with two lines of text under it, and a shadow around
+    // the cell draws a card that is not there; the scale and the neighbours sliding aside
+    // already say the record has been picked up.
+    lift: {},
+  });
 
   /**
    * Settle. The order of the ids is what changes when a filter, a sort or the search term

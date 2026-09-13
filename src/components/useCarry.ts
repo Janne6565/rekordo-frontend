@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Picking a record up and carrying it somewhere else — the web half of the gesture the
@@ -44,6 +44,9 @@ export interface CarrySlot {
   readonly height: number;
 }
 
+/** The default lift: right for anything whose own outline is the thing being held. */
+const CARD_LIFT: CSSProperties = { boxShadow: "0 14px 26px rgb(25 23 19 / 0.22)" };
+
 /** How far a pointer moves before a press counts as a carry. */
 const THRESHOLD_PX = 6;
 /** How long a finger is held before it may carry rather than scroll. Matches the phone. */
@@ -69,10 +72,20 @@ export interface Carry {
 
 export function useCarry({
   count,
+  lift = CARD_LIFT,
   onDrop,
   enabled = true,
 }: {
   readonly count: number;
+  /**
+   * What being in the air looks like, beyond following the pointer.
+   *
+   * The caller's business, because the shape of an item is. A wishlist row is a card, so a
+   * shadow around it is a shadow around the thing you are holding; a shelf tile is artwork
+   * with a title and a subtitle under it, and the same shadow outlines a rectangle that
+   * includes the text — a phantom card around something that was never one.
+   */
+  readonly lift?: CSSProperties;
   /**
    * Where it ended up. Called once, and only when the position actually changed — a press
    * that goes nowhere is not a reorder and must not write anything.
@@ -273,10 +286,10 @@ export function useCarry({
           transition: "none",
           zIndex: 20,
           position: "relative",
-          boxShadow: "0 14px 26px rgb(25 23 19 / 0.22)",
           cursor: "grabbing",
           touchAction: "none",
           userSelect: "none",
+          ...lift,
         };
       }
 
@@ -295,7 +308,7 @@ export function useCarry({
         pointerEvents: "none",
       };
     },
-    [carrying, landingAt, offset],
+    [carrying, landingAt, offset, lift],
   );
 
   /**

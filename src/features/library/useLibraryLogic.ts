@@ -117,10 +117,19 @@ export function useLibraryLogic() {
           applyCopyPatch(copy, { sortIndex }, at),
         ),
       );
-      setSort("MANUAL");
     },
+    /**
+     * The held order is let go only once the shelf has actually been re-read.
+     *
+     * `refetchQueries` rather than `invalidateQueries`, because invalidating resolves
+     * without waiting for a fetch it did not start — and the drop starts one, by changing
+     * the sort. Released too early, the grid falls back to what the query is holding,
+     * which at that moment is the *placeholder* from the previous key: the order from
+     * before the drag. Measured at 149ms, between a correct 61ms and a correct 185ms,
+     * which is exactly the flicker somebody sees.
+     */
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["copies"] });
+      await queryClient.refetchQueries({ queryKey: ["copies"], type: "active" });
       setDropped(null);
     },
   });
@@ -165,7 +174,12 @@ export function useLibraryLogic() {
     arrange: useCallback(
       (from: number, to: number) => {
         const next = moveCopy(rows, from, to);
+        // Both in the commit that puts the record down: the held order, and the order the
+        // shelf is now in. Switching the sort later — inside the write — changes the query
+        // key halfway through, and the fetch that kicks off is still in the air when the
+        // held order is released.
         setDropped(next.map((row) => row.copy.id));
+        setSort("MANUAL");
         arrange.mutate({ next });
       },
       [arrange, rows],

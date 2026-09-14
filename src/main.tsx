@@ -4,6 +4,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import "@/i18n/config";
+import "@fontsource-variable/manrope";
+// The optical-size axis as well as weight, which is what the Google Fonts link used to ask for.
+import "@fontsource-variable/newsreader/opsz.css";
 import "@/styles.css";
 import { startDiagnostics } from "@/diagnostics/faro";
 import { assertMotionTokensMatchStyles } from "@/lib/motion";

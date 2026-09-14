@@ -1190,7 +1190,7 @@ const enCommon = {
       "Translation for convenience. In case of dispute the German {{title}} apply.",
     bindingNotice: "The German version is the binding one; English is a courtesy translation.",
     noTracking:
-      "No tracking, no advertising, no cookie choices. Only technically necessary data is processed.",
+      "No advertising, no sale of data. Diagnostics only if you opt in, and you choose how much.",
     noCookiesHere: "This page sets no analytics or advertising cookies.",
     data: {
       lede: "Everything the DSGVO entitles you to, without writing an e-mail.",
@@ -1370,9 +1370,9 @@ const enCommon = {
         "The pages you visit in that session, which of the main buttons you press and how long each took, and the backend trace behind it",
       eitherHeading: "Either way",
       either1:
-        "Sent to Grafana Cloud in the EU region and kept there. Not sold, and never used for advertising.",
+        "Sent to Grafana Cloud in the EU region (Frankfurt) and kept there for 14 days. Not sold, and never used for advertising.",
       either2:
-        "Your IP address is not stored. It passes through to work out a coarse region and is then discarded, and location lookup is switched off.",
+        "Your IP address is not passed on. Our own server removes it before anything is forwarded, and location lookup is switched off.",
       either3:
         "No record titles, no notes, no prices, no photos. Your collection is not part of this at either level.",
       back: "Back to the choice",
@@ -2604,7 +2604,7 @@ const deCommon: CommonSchema = {
     bindingNotice:
       "Die deutsche Fassung ist die verbindliche; Englisch ist eine Übersetzung zur Information.",
     noTracking:
-      "Kein Tracking, keine Werbung, keine Cookie-Auswahl. Es werden nur technisch notwendige Daten verarbeitet.",
+      "Keine Werbung, kein Verkauf von Daten. Diagnosedaten nur, wenn du zustimmst, und du bestimmst, wie viel.",
     noCookiesHere: "Diese Seite setzt keine Analyse- oder Werbe-Cookies.",
     data: {
       lede: "Alles, worauf dir die DSGVO ein Recht gibt, ohne eine E-Mail zu schreiben.",
@@ -2780,9 +2780,9 @@ const deCommon: CommonSchema = {
         "Die Seiten, die du in dieser Sitzung besuchst, welche der wichtigsten Schaltflächen du drückst und wie lange sie jeweils dauern, und den Backend-Trace dahinter",
       eitherHeading: "In beiden Fällen",
       either1:
-        "Gesendet an Grafana Cloud in der EU-Region und dort gespeichert. Nicht verkauft und nie für Werbung genutzt.",
+        "Gesendet an Grafana Cloud in der EU-Region (Frankfurt) und dort 14 Tage gespeichert. Nicht verkauft und nie für Werbung genutzt.",
       either2:
-        "Deine IP-Adresse wird nicht gespeichert. Sie dient nur kurz dazu, eine grobe Region zu bestimmen, und wird dann verworfen; die Standortbestimmung ist abgeschaltet.",
+        "Deine IP-Adresse wird nicht weitergegeben. Unser eigener Server entfernt sie, bevor etwas weitergeleitet wird; die Standortbestimmung ist abgeschaltet.",
       either3:
         "Keine Titel, keine Notizen, keine Preise, keine Fotos. Deine Sammlung ist auf keiner Stufe Teil davon.",
       back: "Zurück zur Auswahl",

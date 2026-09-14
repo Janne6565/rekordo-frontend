@@ -59,10 +59,10 @@ describe("ConsentSlip", () => {
     expect(screen.getByRole("button", { name: "Save choice" })).toHaveProperty("disabled", false);
   });
 
-  it("shows the corrected disclosure, not the draft that claimed the IP was stored", () => {
+  it("shows the corrected disclosure: the proxy strips the IP, nothing works out a region", () => {
     renderSlip();
     fireEvent.click(screen.getByRole("button", { name: /What each level collects/ }));
-    expect(screen.getByText(/Your IP address is not stored/)).toBeDefined();
+    expect(screen.getByText(/Your IP address is not passed on/)).toBeDefined();
     expect(screen.getByText(/cleared when that tab closes/)).toBeDefined();
   });
 

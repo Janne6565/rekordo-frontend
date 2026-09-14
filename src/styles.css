@@ -21,8 +21,13 @@
   /* The darker accent the deck reserves for destructive wording ("Delete account"). */
   --color-accent-strong: #8c4530;
 
-  --font-sans: "Manrope", system-ui, sans-serif;
-  --font-serif: "Newsreader", Georgia, serif;
+  /*
+   * Self-hosted from @fontsource-variable (imported in main.tsx), not fonts.googleapis.com:
+   * loading them from Google hands every visitor's IP address to Google before anyone has
+   * been asked, which LG München I (3 O 17493/20) found unlawful.
+   */
+  --font-sans: "Manrope Variable", system-ui, sans-serif;
+  --font-serif: "Newsreader Variable", Georgia, serif;
   --font-mono: ui-monospace, Menlo, monospace;
 }
 

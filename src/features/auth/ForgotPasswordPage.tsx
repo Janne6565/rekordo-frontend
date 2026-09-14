@@ -73,6 +73,13 @@ export function ForgotPasswordPage() {
                 autoComplete="email"
                 placeholder={t("auth.emailPlaceholder")}
               />
+              {/* 21f: the one place the cost of an unconfirmed address is stated. It sat on
+                  the sign-in form until turn 2, answering a question nobody has until they
+                  come here -- and the reset endpoint itself has to stay silent, so it can
+                  never be the thing that explains. */}
+              <p className="-mt-1 text-[11.5px] leading-[1.5] text-ink-subtle">
+                {t("auth.resetNeedsConfirmed")}
+              </p>
               <ChallengeField challenge={challenge} />
               {request.isError && (
                 <p role="alert" className="text-sm text-accent">

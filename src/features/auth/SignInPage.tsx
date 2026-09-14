@@ -11,7 +11,10 @@ import type { ReactNode } from "react";
 import { useEffect, useId } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
-/** Screens 4c and 4d: a dark brand panel beside the form. */
+const providerButtonClass =
+  "flex h-11 flex-1 items-center justify-center gap-2 rounded-[9px] border border-line bg-surface text-[13px] font-semibold";
+
+/** Screens 4c and 4d: a dark brand panel beside the form, refined in the sign-in turn 2. */
 export function SignInPage() {
   const { t } = useTranslation();
   const logic = useAuthLogic();
@@ -43,23 +46,40 @@ export function SignInPage() {
   }, [signedInAlready, oauthError, navigate]);
 
   const registering = logic.mode === "REGISTER";
+  /*
+   * On register the one consent tick gates the provider buttons too. A provider sign-up
+   * records the same consent a password sign-up does, and a tick that is already on the
+   * screen says it where a paragraph beside the buttons only described it.
+   */
+  const providersLocked = registering && !logic.consented;
 
   return (
     <div className="flex min-h-full bg-paper">
       <AuthBrandPanel mode={logic.mode} />
 
-      <main className="flex flex-1 items-start justify-center px-4 pt-7 pb-10 sm:items-center sm:px-6 sm:py-12">
+      <main className="flex flex-1 items-start justify-center px-4 pt-7 pb-10 sm:items-center sm:px-6 sm:py-10">
         <div className="w-full max-w-[380px]">
-          {/* Screens 4c and 4d both open with a way back. Sign-in is reachable from a
-              library you were already looking at, and landing in it by accident should
-              cost one click, not a browser gesture. */}
-          <Link
-            to="/"
-            className="mb-5.5 flex items-center gap-1.5 text-[12.5px] font-medium text-ink-muted hover:text-ink"
-          >
-            <ChevronLeft size={15} strokeWidth={1.9} aria-hidden />
-            {t("common.back")}
-          </Link>
+          {/* The way back and the mode switch share the top row. At the foot, the switch
+              sat below a finished form, so somebody on the wrong mode found out last. */}
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-muted hover:text-ink"
+            >
+              <ChevronLeft size={15} strokeWidth={1.9} aria-hidden />
+              {t("common.back")}
+            </Link>
+            <p className="text-right text-[12.5px] text-ink-muted">
+              {registering ? t("auth.haveAccountPrefix") : t("auth.needAccountPrefix")}{" "}
+              <button
+                type="button"
+                onClick={() => logic.setMode(registering ? "SIGN_IN" : "REGISTER")}
+                className="font-semibold text-accent"
+              >
+                {registering ? t("auth.signIn") : t("auth.create")}
+              </button>
+            </p>
+          </div>
           {/*
            * 24i: the brand panel beside this card is gone under 768px and cannot be
            * replaced — so the wordmark carries it here, as one line above the heading.
@@ -69,7 +89,7 @@ export function SignInPage() {
             <Disc3 size={17} strokeWidth={1.6} aria-hidden />
             <span className="font-serif text-[15px]">{t("app.name")}</span>
           </div>
-          <h1 className="font-serif text-[26px] leading-[1.12] sm:text-[32px] sm:leading-[1.1]">
+          <h1 className="font-serif text-[26px] leading-[1.12] sm:text-[30px] sm:leading-[1.1]">
             {registering ? t("auth.createTitle") : t("auth.signInTitle")}
           </h1>
           <p className="mt-2 text-[13.5px] text-ink-muted">
@@ -77,7 +97,7 @@ export function SignInPage() {
           </p>
 
           <form
-            className="mt-7 flex flex-col gap-4"
+            className="mt-6 flex flex-col gap-3.5"
             onSubmit={(event) => {
               event.preventDefault();
               logic.submit();
@@ -104,6 +124,8 @@ export function SignInPage() {
               placeholder={t("auth.emailPlaceholder")}
             />
 
+            {/* The reset-needs-confirmed sentence moved to the Forgot screen (21f), which
+                is where the question it answers is actually asked. */}
             <PasswordField
               label={t("auth.password")}
               value={logic.password}
@@ -122,31 +144,16 @@ export function SignInPage() {
               }
             />
 
-            {/* 21f: the one place the cost of an unconfirmed address is stated. It belongs
-                here rather than as a warning next to the collection, because this is the
-                screen where it would actually bite -- and the reset endpoint itself has to
-                stay silent, so it can never be the thing that explains. */}
-            {!registering && (
-              <p className="-mt-1 text-[11.5px] leading-[1.5] text-ink-subtle">
-                {t("auth.resetNeedsConfirmed")}
-              </p>
-            )}
-
             {registering ? (
-              <div className="flex flex-col gap-3.5">
-                <Checkbox checked={logic.agreed} onChange={logic.setAgreed}>
-                  <Trans
-                    i18nKey="auth.agreeTerms"
-                    components={{
-                      terms: <LegalTextLink doc="nutzungsbedingungen" />,
-                      privacy: <LegalTextLink doc="datenschutz" />,
-                    }}
-                  />
-                </Checkbox>
-                <Checkbox checked={logic.ageConfirmed} onChange={logic.setAgeConfirmed}>
-                  {t("auth.confirmAge")}
-                </Checkbox>
-              </div>
+              <Checkbox checked={logic.consented} onChange={logic.setConsented}>
+                <Trans
+                  i18nKey="auth.agreeTerms"
+                  components={{
+                    terms: <LegalTextLink doc="nutzungsbedingungen" />,
+                    privacy: <LegalTextLink doc="datenschutz" />,
+                  }}
+                />
+              </Checkbox>
             ) : (
               <Checkbox checked={logic.rememberMe} onChange={logic.setRememberMe}>
                 {t("auth.rememberMe")}
@@ -172,77 +179,68 @@ export function SignInPage() {
 
           {logic.availableProviders.length > 0 && (
             <>
-              <div className="my-5 flex items-center gap-3">
+              <div className="my-4 flex items-center gap-3">
                 <div className="h-px flex-1 bg-line" />
                 <span className="font-mono text-[10px] uppercase tracking-[0.1em] text-ink-subtle">
                   {t("auth.or")}
                 </span>
                 <div className="h-px flex-1 bg-line" />
               </div>
-              {registering && (
-                /* The provider buttons have no form to put tick boxes in, so the agreement
-                   is stated beside them instead. The account they create records the same
-                   consent a password sign-up does. */
-                <p className="mb-3 text-[11px] leading-[1.55] text-ink-subtle">
-                  <Trans
-                    i18nKey="auth.providerConsent"
-                    components={{
-                      terms: <LegalTextLink doc="nutzungsbedingungen" />,
-                      privacy: <LegalTextLink doc="datenschutz" />,
-                    }}
-                  />
+              <div className="flex gap-2.5">
+                {logic.availableProviders.map((provider) =>
+                  providersLocked ? (
+                    <button
+                      key={provider.id}
+                      type="button"
+                      disabled
+                      className={`${providerButtonClass} cursor-not-allowed opacity-45`}
+                    >
+                      <ProviderIcon providerId={provider.id} />
+                      {provider.displayName}
+                    </button>
+                  ) : (
+                    <a
+                      key={provider.id}
+                      // A full navigation, never fetch: the provider answers with a redirect
+                      // the browser has to follow itself.
+                      href={`/api/v1/auth/oauth/${provider.id}/authorize`}
+                      className={`${providerButtonClass} hover:bg-canvas`}
+                    >
+                      <ProviderIcon providerId={provider.id} />
+                      {provider.displayName}
+                    </a>
+                  ),
+                )}
+              </div>
+              {providersLocked && (
+                <p className="mt-1.5 text-[11px] text-ink-subtle">
+                  {t("auth.providerNeedsConsent")}
                 </p>
               )}
-              <div className="flex gap-2.5">
-                {logic.availableProviders.map((provider) => (
-                  <a
-                    key={provider.id}
-                    // A full navigation, never fetch: the provider answers with a redirect
-                    // the browser has to follow itself.
-                    href={`/api/v1/auth/oauth/${provider.id}/authorize`}
-                    className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[9px] border border-line bg-surface text-[13px] font-semibold hover:bg-canvas"
-                  >
-                    <ProviderIcon providerId={provider.id} />
-                    {provider.displayName}
-                  </a>
-                ))}
-              </div>
             </>
           )}
 
           {/* The no-account path is a real control, not a footnote: it sits with the other
-              ways in, at the same size as the OAuth buttons and above the sign-in/register
-              switch. The app is fully usable without an account, and burying that would be
-              a lie about what signing in is for. The darker border is the one thing that
-              separates it from a provider button — it is a destination, not a handoff. */}
-          <div className="mt-5 border-t border-line pt-5">
+              ways in, at the same size as the OAuth buttons. The app is fully usable without
+              an account, and burying that would be a lie about what signing in is for. The
+              darker border is the one thing that separates it from a provider button — it
+              is a destination, not a handoff. Its note and the legal links share one row. */}
+          <div className="mt-5 border-t border-line pt-4">
             <Link
               to="/"
               className={buttonClassName(
                 "secondary",
-                "h-[46px] w-full rounded-[9px] border-ink/40 text-[13.5px] hover:border-ink",
+                "h-11 w-full rounded-[9px] border-ink/40 text-[13.5px] hover:border-ink",
               )}
             >
               <HardDrive size={16} strokeWidth={1.75} className="text-ink-subtle" aria-hidden />
               {t("auth.continueWithout")}
             </Link>
-            <p className="mt-2 text-center text-[11.5px] leading-relaxed text-ink-subtle">
-              {t("auth.continueWithoutBody")}
-            </p>
+            <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+              <p className="text-[11.5px] text-ink-subtle">{t("auth.continueWithoutBody")}</p>
+              <SignInLegalFooter />
+            </div>
           </div>
-
-          <p className="mt-6 text-center text-[13px] text-ink-muted">
-            {registering ? t("auth.haveAccountPrefix") : t("auth.needAccountPrefix")}{" "}
-            <button
-              type="button"
-              onClick={() => logic.setMode(registering ? "SIGN_IN" : "REGISTER")}
-              className="font-semibold text-accent"
-            >
-              {registering ? t("auth.signIn") : t("auth.create")}
-            </button>
-          </p>
-
-          <SignInLegalFooter />
         </div>
       </main>
     </div>
@@ -258,7 +256,7 @@ export function SignInPage() {
 function SignInLegalFooter() {
   const { t } = useTranslation();
   return (
-    <div className="mt-9 flex justify-center gap-4 text-[11px] text-ink-subtle">
+    <div className="flex gap-3 text-[11px] text-ink-subtle">
       <LegalTextLink doc="impressum">{t("legal.impressum")}</LegalTextLink>
       <LegalTextLink doc="datenschutz">{t("legal.privacyShort")}</LegalTextLink>
       <LegalTextLink doc="nutzungsbedingungen">{t("legal.termsShort")}</LegalTextLink>

@@ -97,6 +97,9 @@ export function useChallenge(action: ChallengeAction): Challenge {
             },
             theme: "light",
             size: "flexible",
+            // Drawn only when Cloudflare actually wants a click. A passed check is 65px of
+            // box that asks nothing, on forms whose whole job is to be short.
+            appearance: "interaction-only",
             language: i18n.language,
           }) ?? null;
         widget.current = created;

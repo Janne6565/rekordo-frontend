@@ -38,7 +38,12 @@ export function PasswordField({
         >
           {label}
         </label>
-        {trailing}
+        {/* The length rule rides in the label row, where it costs no height. The long
+            version is still what a too-short submit is told. */}
+        {trailing ??
+          (showStrength && (
+            <span className="text-[11px] text-ink-subtle">{t("auth.passwordHintShort")}</span>
+          ))}
       </div>
 
       <div className="mt-1.5 flex h-[46px] items-center gap-2.5 rounded-[9px] border border-line bg-surface px-3.5 focus-within:border-ink">
@@ -69,20 +74,14 @@ export function PasswordField({
       </div>
 
       {showStrength && (
-        <>
-          <div className="mt-2 flex gap-1.5" aria-hidden>
-            {[1, 2, 3].map((bar) => (
-              <div
-                key={bar}
-                className={cn(
-                  "h-[3px] flex-1 rounded-sm",
-                  bar <= strength ? "bg-accent" : "bg-line",
-                )}
-              />
-            ))}
-          </div>
-          <p className="mt-1.5 text-[11.5px] text-ink-subtle">{t("auth.passwordHint")}</p>
-        </>
+        <div className="mt-2 flex gap-1.5" aria-hidden>
+          {[1, 2, 3].map((bar) => (
+            <div
+              key={bar}
+              className={cn("h-[3px] flex-1 rounded-sm", bar <= strength ? "bg-accent" : "bg-line")}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

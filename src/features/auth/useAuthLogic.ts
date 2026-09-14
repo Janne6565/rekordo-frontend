@@ -74,14 +74,13 @@ export function useAuthLogic() {
   const [displayName, setDisplayName] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   /**
-   * Two ticks, neither pre-checked (screen 17a).
+   * One tick, never pre-checked (sign-in turn 2, replacing 17a's two).
    *
-   * Separate booleans rather than one, because they are two statements: agreeing to the
-   * terms is a contract, confirming an age is a declaration of fact, and a single box that
-   * bundled them would let somebody agree to one by accepting the other.
+   * Its sentence names both statements, the terms and the age, so ticking it cannot be
+   * read as agreeing to one alone. The server still receives them as two fields, which is
+   * how the consent record keeps them apart.
    */
-  const [agreed, setAgreed] = useState(false);
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [consented, setConsented] = useState(false);
   const [failed, setFailed] = useState<readonly AuthError[]>([]);
 
   // Only providers the server can actually complete a flow with, so an unconfigured one
@@ -96,8 +95,8 @@ export function useAuthLogic() {
               email: email.trim(),
               password,
               displayName: displayName.trim(),
-              acceptedTerms: agreed,
-              confirmedAge: ageConfirmed,
+              acceptedTerms: consented,
+              confirmedAge: consented,
               turnstileToken: challenge.token,
             })
           : await login({
@@ -162,10 +161,8 @@ export function useAuthLogic() {
     setDisplayName,
     rememberMe,
     setRememberMe,
-    agreed,
-    setAgreed,
-    ageConfirmed,
-    setAgeConfirmed,
+    consented,
+    setConsented,
     availableProviders: providerQuery.data ?? [],
     challenge,
     // Completeness only — the server validates the address and password properly, and a
@@ -175,7 +172,7 @@ export function useAuthLogic() {
     canSubmit:
       email.trim().length > 0 &&
       password.length > 0 &&
-      (mode === "SIGN_IN" || (agreed && ageConfirmed)) &&
+      (mode === "SIGN_IN" || consented) &&
       // Unsolved, or the site key not yet known. The second half matters: without it the
       // first submit after a cold load would post before this client learned a token was
       // required, and be refused with a 403 that looks like nothing the form did.

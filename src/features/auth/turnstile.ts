@@ -20,6 +20,7 @@ export interface TurnstileRenderOptions {
   readonly "error-callback": () => void;
   readonly theme?: "light" | "dark" | "auto";
   readonly size?: "normal" | "flexible" | "compact";
+  readonly appearance?: "always" | "execute" | "interaction-only";
   readonly language?: string;
 }
 

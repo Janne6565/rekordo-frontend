@@ -52,10 +52,8 @@ function page(
     setDisplayName: vi.fn(),
     rememberMe: true,
     setRememberMe: vi.fn(),
-    agreed: false,
-    setAgreed: vi.fn(),
-    ageConfirmed: false,
-    setAgeConfirmed: vi.fn(),
+    consented: false,
+    setConsented: vi.fn(),
     availableProviders: [],
     challenge: challenge(),
     canSubmit: false,
@@ -136,5 +134,59 @@ describe("the sign-in page when there is nothing to sign in to", () => {
     );
 
     expect(screen.getByRole("button", { name: /Sign in/i }).hasAttribute("disabled")).toBe(true);
+  });
+});
+
+/*
+ * Sign-in turn 2: register used to scroll on a 1280 x 800 window. These pin the cuts that
+ * carry behaviour rather than just spacing.
+ */
+describe("the refined register form", () => {
+  const google = { id: "google", displayName: "Google" };
+
+  it("asks for consent with one tick instead of two", () => {
+    page({ status: "anonymous", firstSyncPending: false }, {}, { mode: "REGISTER" });
+
+    expect(screen.getAllByRole("checkbox")).toHaveLength(1);
+    expect(screen.getByRole("checkbox", { name: /16 or older/i })).toBeDefined();
+  });
+
+  it("holds the provider buttons until the consent is ticked", () => {
+    page(
+      { status: "anonymous", firstSyncPending: false },
+      {},
+      { mode: "REGISTER", availableProviders: [google] },
+    );
+
+    expect(screen.getByRole("button", { name: "Google" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText(/once the box above is ticked/i)).toBeDefined();
+  });
+
+  it("lets a ticked consent through to the provider", () => {
+    page(
+      { status: "anonymous", firstSyncPending: false },
+      {},
+      { mode: "REGISTER", availableProviders: [google], consented: true },
+    );
+
+    expect(screen.queryByRole("button", { name: "Google" })).toBeNull();
+    expect(screen.queryByText(/once the box above is ticked/i)).toBeNull();
+  });
+
+  it("never gates the providers when signing in", () => {
+    page({ status: "anonymous", firstSyncPending: false }, {}, { availableProviders: [google] });
+
+    expect(screen.queryByRole("button", { name: "Google" })).toBeNull();
+    expect(screen.queryByText(/once the box above is ticked/i)).toBeNull();
+  });
+
+  it("offers the mode switch before the form, not after it", () => {
+    page({ status: "anonymous", firstSyncPending: false }, {}, { mode: "REGISTER" });
+
+    const heading = screen.getByRole("heading", { name: /Create account/i });
+    const toSignIn = screen.getByRole("button", { name: /^Sign in$/i });
+    expect(
+      toSignIn.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

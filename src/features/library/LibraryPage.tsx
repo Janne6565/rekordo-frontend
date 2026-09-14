@@ -372,7 +372,7 @@ function LibraryGrid({
 
   /**
    * Dragging *is* how a shelf becomes hand-arranged: there is no separate mode, and the
-   * drop switches the order to "your order" because the order you were looking at when you
+   * drop renumbers the order on screen because the order you were looking at when you
    * picked a record up is the order you meant to adjust.
    */
   const carry = useCarry({

@@ -186,6 +186,22 @@ class MusicCollectorDb extends Dexie {
           wish.releaseId = null;
         });
     });
+
+    /**
+     * A copy now has a hand-placed position, and every existing one has never been placed.
+     *
+     * Written rather than left absent for the reason version 7 gives, and one more: the
+     * shelf's order compares `sortIndex === null`, so an absent one is neither placed nor
+     * unplaced — it subtracts to `NaN` and scrambles the shelf it is on.
+     */
+    this.version(8).upgrade(async (tx) => {
+      await tx
+        .table("copies")
+        .toCollection()
+        .modify((copy: Record<string, unknown>) => {
+          if (copy.sortIndex === undefined) copy.sortIndex = null;
+        });
+    });
   }
 }
 

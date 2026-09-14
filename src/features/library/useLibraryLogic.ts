@@ -32,6 +32,18 @@ export type SortKey = NonNullable<LibraryFilter["sort"]>;
  */
 const SEARCH_DEBOUNCE_MS = 200;
 
+/**
+ * The shelf is always read in the order somebody arranged it.
+ *
+ * Not a choice held in state: there is no sort control any more, so the only two orders a
+ * shelf can be in are newest-first and "yours" — and `MANUAL` over a shelf nobody has
+ * arranged *is* newest-first, because every unplaced copy sorts newest first. Holding it
+ * in `useState` instead reset to newest-first on every mount, so an arranged shelf lost
+ * its order on a reload, on coming back from a record, and on any browser that had never
+ * dragged but pulled the arrangement from another device.
+ */
+const SHELF_ORDER: SortKey = "MANUAL";
+
 export interface LibraryRow {
   readonly copy: Copy;
   readonly release: Release | undefined;
@@ -54,7 +66,6 @@ export function useLibraryLogic() {
   const queryClient = useQueryClient();
   const [format, setFormat] = useState<FormatFilter>("ALL");
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<SortKey>("ADDED_DESC");
   /**
    * 29e-5: the shelf filtered down to the records the sign-in brought in.
    *
@@ -71,19 +82,16 @@ export function useLibraryLogic() {
   const stats = useCollectionStats();
 
   const copiesQuery = useQuery({
-    queryKey: ["copies", format, searchTerm, sort],
+    queryKey: ["copies", format, searchTerm, SHELF_ORDER],
     /**
      * A shelf already on screen stays there while the next one is read.
      *
-     * The order is part of the key and the first drag switches it, so arranging turned the
-     * shelf into a query with nothing cached and every record disappeared until the read
-     * came back. Keeping the previous rows means the drop's held order stays visible across
-     * that swap, which is the whole point of holding it — and the grid stops blanking when
-     * the sort is changed from the control, or a search term is typed.
+     * A format chip or a search term is part of the key, so without this the grid blanks
+     * until the new read comes back instead of changing in place.
      */
     placeholderData: keepPreviousData,
     queryFn: async () => {
-      const copies = await store.listCopies({ format, search: searchTerm, sort });
+      const copies = await store.listCopies({ format, search: searchTerm, sort: SHELF_ORDER });
       const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
       return copies.map((copy) => ({ copy, release: releases.get(copy.releaseId) }));
     },
@@ -99,10 +107,8 @@ export function useLibraryLogic() {
   /**
    * A record set down somewhere else.
    *
-   * Renumbers the shelf *as it was on screen* and switches the order to `MANUAL` in one
-   * go. Switching is the point rather than a side effect: the order you were looking at
-   * when you picked a record up is the order you meant to adjust, so dragging on a shelf
-   * sorted by artist keeps that arrangement and moves one record within it.
+   * Renumbers the shelf *as it was on screen*: the order you were looking at when you picked
+   * a record up is the order you meant to adjust.
    *
    * The drop is held until the store has caught up — writing a row per record and
    * re-reading the shelf is time the tile would otherwise spend back where it started.
@@ -122,11 +128,9 @@ export function useLibraryLogic() {
      * The held order is let go only once the shelf has actually been re-read.
      *
      * `refetchQueries` rather than `invalidateQueries`, because invalidating resolves
-     * without waiting for a fetch it did not start — and the drop starts one, by changing
-     * the sort. Released too early, the grid falls back to what the query is holding,
-     * which at that moment is the *placeholder* from the previous key: the order from
-     * before the drag. Measured at 149ms, between a correct 61ms and a correct 185ms,
-     * which is exactly the flicker somebody sees.
+     * without waiting for the fetch it starts. Released too early, the grid falls back to
+     * what the query is holding — the order from before the drag. Measured at 149ms,
+     * between a correct 61ms and a correct 185ms, which is exactly the flicker somebody sees.
      */
     onSettled: async () => {
       await queryClient.refetchQueries({ queryKey: ["copies"], type: "active" });
@@ -157,10 +161,9 @@ export function useLibraryLogic() {
     collectionEmpty: stats !== undefined && stats.copyCount === 0,
     format,
     search,
-    sort,
     handleFormat,
     handleSearch,
-    /** Whether "Your order" is a thing the controls can offer yet. */
+    /** Whether any record on the shelf has been placed by hand yet. */
     arranged: useMemo(() => hasArrangedOrder(all.map((row) => row.copy)), [all]),
     /**
      * The held order is applied *here*, synchronously, and not inside the mutation.
@@ -174,12 +177,7 @@ export function useLibraryLogic() {
     arrange: useCallback(
       (from: number, to: number) => {
         const next = moveCopy(rows, from, to);
-        // Both in the commit that puts the record down: the held order, and the order the
-        // shelf is now in. Switching the sort later — inside the write — changes the query
-        // key halfway through, and the fetch that kicks off is still in the air when the
-        // held order is released.
         setDropped(next.map((row) => row.copy.id));
-        setSort("MANUAL");
         arrange.mutate({ next });
       },
       [arrange, rows],

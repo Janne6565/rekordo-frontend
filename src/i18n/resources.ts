@@ -766,7 +766,7 @@ const enCommon = {
       truncated: {
         title: "The link arrived cut short",
         body: "The address in the bar is missing its last few characters, which some mail apps do when they wrap a long line. Copy the whole line from the mail, including everything after the last slash.",
-        exampleHead: "rekordo.jannekeipert.de/confirm/",
+        exampleHead: "rekordo.de/confirm/",
         exampleTail: "4d71-9ba2-06fc-31e8",
         exampleNote: "The part in dark is what got lost",
       },
@@ -2174,7 +2174,7 @@ const deCommon: CommonSchema = {
       truncated: {
         title: "Der Link kam abgeschnitten an",
         body: "In der Adresszeile fehlen die letzten Zeichen. Manche Mail-Programme kürzen lange Zeilen beim Umbruch. Kopiere die ganze Zeile aus der Mail, inklusive allem nach dem letzten Schrägstrich.",
-        exampleHead: "rekordo.jannekeipert.de/confirm/",
+        exampleHead: "rekordo.de/confirm/",
         exampleTail: "4d71-9ba2-06fc-31e8",
         exampleNote: "Der dunkle Teil ist der, der verloren ging",
       },

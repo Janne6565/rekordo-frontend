@@ -3,7 +3,11 @@ import { ConsentDetail } from "@/features/diagnostics/ConsentDetail";
 import { ConsentLevelRow } from "@/features/diagnostics/ConsentLevelRow";
 import { useConsentSlipLogic } from "@/features/diagnostics/useConsentSlipLogic";
 import { cn } from "@/lib/utils";
-import { DIAGNOSTICS_LEVELS, type DiagnosticsLevel } from "@/local/diagnosticsConsent";
+import {
+  CONSENT_UNDO_HOLD,
+  DIAGNOSTICS_LEVELS,
+  type DiagnosticsLevel,
+} from "@/local/diagnosticsConsent";
 import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -61,7 +65,15 @@ export function ConsentSlip() {
         )}
         data-testid="consent-slip"
       >
-        <div className="h-[3px] bg-accent" />
+        {/* On the acknowledgement the rule becomes the countdown: it runs out exactly when
+            the slip closes itself, so the note does not look like it is staying for good.
+            Keyed so a second Save after an Undo starts it from full again. */}
+        <div
+          key={acknowledged ? "countdown" : "rule"}
+          className={cn("h-[3px] bg-accent", acknowledged && "mc-countdown")}
+          style={acknowledged ? { animationDuration: `${CONSENT_UNDO_HOLD}ms` } : undefined}
+          data-testid="consent-slip-rule"
+        />
         <div className="px-[19px] pt-[17px] pb-4">
           {acknowledged ? (
             <Acknowledgement logic={logic} />

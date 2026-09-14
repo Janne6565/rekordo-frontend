@@ -1,4 +1,5 @@
 import { ConsentSlip } from "@/features/diagnostics/ConsentSlip";
+import { CONSENT_UNDO_HOLD } from "@/local/diagnosticsConsent";
 import { store } from "@/store";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
@@ -79,6 +80,22 @@ describe("ConsentSlip", () => {
     expect(globalThis.localStorage.getItem("music-collector-diagnostics-consent")).toContain(
       "ANONYMOUS",
     );
+  });
+
+  it("runs the top rule down over the same hold that closes the acknowledgement", () => {
+    renderSlip();
+    expect(screen.getByTestId("consent-slip-rule").className).not.toContain("mc-countdown");
+
+    fireEvent.click(screen.getByTestId("consent-level-ANONYMOUS"));
+    fireEvent.click(screen.getByRole("button", { name: "Save choice" }));
+
+    const rule = screen.getByTestId("consent-slip-rule");
+    expect(rule.className).toContain("mc-countdown");
+    expect(rule.style.animationDuration).toBe(`${CONSENT_UNDO_HOLD}ms`);
+
+    // Undo puts the question back, and the question has no clock on it.
+    fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+    expect(screen.getByTestId("consent-slip-rule").className).not.toContain("mc-countdown");
   });
 
   it("stays out of the way of a browser that has already answered", () => {

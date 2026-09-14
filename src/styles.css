@@ -397,6 +397,28 @@ body {
  * where the record went.
  */
 
+/* --- Countdown: a rule that runs out when the thing it tops closes ----------------- */
+
+/*
+ * The duration is set inline from the same constant as the timer, so the bar and the
+ * close cannot drift apart. Scaled rather than resized, so it never triggers layout.
+ */
+.mc-countdown {
+  transform-origin: left center;
+  animation: mccountdown linear forwards;
+}
+
+@keyframes mccountdown {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/*
+ * Unchanged under reduced motion. It is one slow, linear shrink, and it is the only thing
+ * saying the note is about to go.
+ */
+
 /* --- The one slow entrance --------------------------------------------------------- */
 
 /*

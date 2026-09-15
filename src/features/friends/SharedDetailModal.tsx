@@ -101,7 +101,6 @@ export function SharedDetailModal({
           />
         </>
       }
-      footnote={<Hints />}
     >
       <div
         className="relative flex min-h-0 flex-col overflow-y-auto p-[30px] max-sm:px-[18px] max-sm:pt-2.5 max-sm:pb-[22px]"
@@ -291,31 +290,5 @@ function Flip({
     >
       <Icon size={19} strokeWidth={1.75} aria-hidden />
     </button>
-  );
-}
-
-/** What the keys do, said once on the dim where it costs the sheet nothing. */
-function Hints() {
-  const { t } = useTranslation();
-  return (
-    <p className="m-0 flex items-center gap-3.5 font-mono text-[10.5px] text-paper/60 max-sm:hidden">
-      <span className="flex items-center gap-[5px]">
-        <Key>←</Key>
-        <Key>→</Key>
-        {t("profile.detail.flip")}
-      </span>
-      <span className="flex items-center gap-[5px]">
-        <Key>esc</Key>
-        {t("profile.detail.dismiss")}
-      </span>
-    </p>
-  );
-}
-
-function Key({ children }: { readonly children: ReactNode }) {
-  return (
-    <kbd className="inline-flex h-[19px] min-w-[19px] items-center justify-center rounded border border-paper/35 px-[5px] font-mono not-italic">
-      {children}
-    </kbd>
   );
 }

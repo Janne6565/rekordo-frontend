@@ -95,8 +95,6 @@ interface ModalProps {
    * open, and it is positioned by the caller against the viewport.
    */
   readonly overlay?: ReactNode;
-  /** A quiet line under the panel, on the dim: the keyboard hints on 23a. */
-  readonly footnote?: ReactNode;
   readonly children: ReactNode;
 }
 
@@ -123,7 +121,6 @@ export function Modal({
   sheetHeight = "auto",
   sheetHandle = true,
   overlay,
-  footnote,
   children,
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -203,10 +200,8 @@ export function Modal({
         <ModalContext.Provider value={{ dismiss, refused: nudging }}>
           {overlay}
           {/*
-           * Panel and footnote are one column, so the hints under 23a's sheet stay with
-           * it however tall the panel turns out to be. The inline width is a variable
-           * rather than a max-width, because a phone sheet has to drop it again and an
-           * inline style cannot be overridden by a class.
+           * The inline width is a variable rather than a max-width, because a phone sheet
+           * has to drop it again and an inline style cannot be overridden by a class.
            */}
           <div
             className={cn(
@@ -240,7 +235,6 @@ export function Modal({
               )}
               {children}
             </div>
-            {footnote}
           </div>
         </ModalContext.Provider>
       </div>

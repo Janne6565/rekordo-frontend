@@ -298,8 +298,6 @@ const enCommon = {
       positionSwipe: "{{index}} of {{total}} · swipe",
       previous: "Previous record",
       next: "Next record",
-      flip: "flip",
-      dismiss: "close",
     },
   },
   public: {
@@ -1714,8 +1712,6 @@ const deCommon: CommonSchema = {
       positionSwipe: "{{index}} von {{total}} · wischen",
       previous: "Vorheriges Exemplar",
       next: "Nächstes Exemplar",
-      flip: "blättern",
-      dismiss: "schließen",
     },
   },
   public: {

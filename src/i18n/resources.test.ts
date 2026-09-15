@@ -16,6 +16,22 @@ describe("translation resources", () => {
     expect(leafPaths(resources[language].common).sort()).toEqual(expected);
   });
 
+  // A placeholder only one language has is one the call site was never written to fill, so
+  // it reaches the page as literal `{{title}}`.
+  it.each(languages)("%s uses the same placeholders as en", (language) => {
+    const placeholders = (common: unknown) =>
+      leafPaths(common).map((path) => {
+        const value = path
+          .split(".")
+          .reduce<unknown>((node, key) => (node as Record<string, unknown>)[key], common) as string;
+        const names = [...value.matchAll(/\{\{\s*(\w+)/g)].map((match) => match[1]).sort();
+        return `${path}: ${names.join(",")}`;
+      });
+    expect(placeholders(resources[language].common).sort()).toEqual(
+      placeholders(resources.en.common).sort(),
+    );
+  });
+
   it("has no empty translations", () => {
     for (const language of languages) {
       const values = leafPaths(resources[language].common).map((path) =>

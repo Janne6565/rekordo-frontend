@@ -1187,7 +1187,7 @@ const enCommon = {
     copyright: "© {{year}} {{name}} · Berlin",
     effective: "Effective {{date}} · version {{version}}",
     translationNotice:
-      "Translation for convenience. In case of dispute the German {{title}} apply.",
+      "Translation for convenience. In case of dispute the German original applies.",
     bindingNotice: "The German version is the binding one; English is a courtesy translation.",
     noTracking:
       "No advertising, no sale of data. Diagnostics only if you opt in, and you choose how much.",

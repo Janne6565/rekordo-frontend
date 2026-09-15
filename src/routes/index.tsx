@@ -1,6 +1,6 @@
-import { LibraryPage } from "@/features/library/LibraryPage";
+import { LibraryGate } from "@/features/firstPull/LibraryGate";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-  component: LibraryPage,
+  component: LibraryGate,
 });

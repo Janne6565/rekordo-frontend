@@ -332,7 +332,30 @@ export function createSyncTransport(store: SyncStore): SyncTransport {
   };
 }
 
-/** The engine, wired to this app's transport. Every caller goes through here. */
-export function createSyncEngine(store: SyncStore, clock: ClockSource): SyncEngine {
-  return new SyncEngine(store, clock, createSyncTransport(store));
+/** Told about each sync page as it arrives, before the engine applies it. */
+export interface PullObserver {
+  readonly onPage: (page: SyncPage) => void;
+}
+
+/**
+ * The engine, wired to this app's transport. Every caller goes through here.
+ *
+ * The observer sits on the transport rather than in the engine so the shared package does
+ * not grow a progress API for the one screen that wants it (loading 1b).
+ */
+export function createSyncEngine(
+  store: SyncStore,
+  clock: ClockSource,
+  observer?: PullObserver,
+): SyncEngine {
+  const transport = createSyncTransport(store);
+  if (observer === undefined) return new SyncEngine(store, clock, transport);
+  return new SyncEngine(store, clock, {
+    ...transport,
+    async pull(cursor) {
+      const page = await transport.pull(cursor);
+      observer.onPage(page);
+      return page;
+    },
+  });
 }

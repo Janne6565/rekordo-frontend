@@ -1,9 +1,16 @@
 import { Disc3, Heart, Layers, ScanBarcode } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-/** The dark half of screens 4c and 4d. */
-export function AuthBrandPanel({ mode }: { readonly mode: "SIGN_IN" | "REGISTER" }) {
+interface AuthBrandPanelProps {
+  readonly mode: "SIGN_IN" | "REGISTER";
+  /** A sign-in foot line. Only loading 1b has one: who the shelf being fetched belongs to. */
+  readonly footer?: string;
+}
+
+/** The dark half of screens 4c and 4d, and of loading 1b. */
+export function AuthBrandPanel({ mode, footer }: AuthBrandPanelProps) {
   const { t } = useTranslation();
+  const foot = mode === "REGISTER" ? t("authPanel.freeNote") : footer;
 
   return (
     <aside className="hidden w-[520px] flex-none flex-col justify-between bg-ink p-13 px-12 py-13 md:flex">
@@ -36,13 +43,12 @@ export function AuthBrandPanel({ mode }: { readonly mode: "SIGN_IN" | "REGISTER"
         )}
       </div>
 
-      {/* Sign-in has no foot line. The four format thumbnails that used to sit here were
-          decoration on a page whose whole job is to get out of the way, so the panel now
-          ends with the copy. Register keeps its note, which says something. */}
-      {mode === "REGISTER" && (
-        <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-white/35">
-          {t("authPanel.freeNote")}
-        </p>
+      {/* The sign-in form has no foot line. The four format thumbnails that used to sit
+          here were decoration on a page whose whole job is to get out of the way, so the
+          panel now ends with the copy. Register keeps its note, which says something, and
+          loading 1b says whose shelf is on its way. */}
+      {foot !== undefined && (
+        <p className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-white/35">{foot}</p>
       )}
     </aside>
   );

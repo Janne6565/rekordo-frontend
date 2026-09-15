@@ -4,7 +4,9 @@ import { invalidFields } from "@/api/problem";
 import { useChallenge } from "@/features/auth/useChallenge";
 import { useStore } from "@/local/StoreProvider";
 import { signedIn, signedOut } from "@/store/authSlice";
+import { firstPullStarted } from "@/store/firstPullSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { readSyncStart } from "@/sync/syncStart";
 import { passwordLongEnough } from "@janne6565/rekordo-shared";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -111,12 +113,13 @@ export function useAuthLogic() {
       setAccessToken(session.accessToken);
 
       // A device that already holds a collection has to be asked what to do with it before
-      // anything is pushed or pulled — every option is destructive in one direction.
-      const hasLocalCollection = (await store.listCopies()).length > 0;
-      const hasSyncedBefore = (await store.readSyncCursor()) > 0;
-      return { user: session.user, firstSyncPending: hasLocalCollection && !hasSyncedBefore };
+      // anything is pushed or pulled — every option is destructive in one direction. One
+      // that holds nothing waits for its first pull instead of showing an empty shelf.
+      return { user: session.user, ...(await readSyncStart(store)) };
     },
-    onSuccess: ({ user, firstSyncPending }) => {
+    onSuccess: ({ user, firstSyncPending, awaitingFirstPull }) => {
+      // Before `signedIn`, so the library never renders one frame of "your shelf is empty".
+      if (awaitingFirstPull) dispatch(firstPullStarted());
       dispatch(signedIn({ user, firstSyncPending }));
       setFailed([]);
       // Spent either way: a token is redeemed exactly once, so leaving it in place would

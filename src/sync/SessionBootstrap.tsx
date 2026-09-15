@@ -3,7 +3,9 @@ import { refresh } from "@/api/generated/auth/auth";
 import { useStore } from "@/local/StoreProvider";
 import { readSyncEnabled, writeLastSyncedAt } from "@/local/settings";
 import { signedIn, signedOut } from "@/store/authSlice";
+import { firstPullFinished, firstPullPage, firstPullStarted } from "@/store/firstPullSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { readSyncStart } from "@/sync/syncStart";
 import { createSyncEngine } from "@/sync/transport";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useEffect, useRef } from "react";
@@ -49,14 +51,11 @@ export function SessionBootstrap({ children }: { readonly children: ReactNode })
           return;
         }
         setAccessToken(session.accessToken);
-        const hasLocalCollection = (await store.listCopies()).length > 0;
-        const hasSyncedBefore = (await store.readSyncCursor()) > 0;
-        dispatch(
-          signedIn({
-            user: session.user,
-            firstSyncPending: hasLocalCollection && !hasSyncedBefore,
-          }),
-        );
+        const { firstSyncPending, awaitingFirstPull } = await readSyncStart(store);
+        // Before `signedIn`, for the same reason as on the sign-in form: a provider sign-in
+        // arrives here, and its first frame of library must not say the shelf is empty.
+        if (awaitingFirstPull) dispatch(firstPullStarted());
+        dispatch(signedIn({ user: session.user, firstSyncPending }));
       } catch {
         // No cookie, or the server is unreachable. Either way the app runs anonymously,
         // which is a fully supported state rather than an error.
@@ -68,14 +67,27 @@ export function SessionBootstrap({ children }: { readonly children: ReactNode })
   useEffect(() => {
     if (auth.status !== "signedIn" || auth.firstSyncPending) return;
 
-    const engine = createSyncEngine(store, clock);
+    // Every tick reports its pages; the slice only listens while a first pull is waiting.
+    const engine = createSyncEngine(store, clock, {
+      onPage: (page) =>
+        dispatch(
+          firstPullPage({
+            copies: page.copies.filter((copy) => copy.deletedAt === null).length,
+            wishes: page.wishes.filter((wish) => wish.deletedAt === null).length,
+            last: !page.hasMore,
+          }),
+        ),
+    });
     const run = async () => {
       // A slow sync must not stack up behind itself on a flaky connection.
       if (syncing.current) return;
       // Read every tick rather than once: the account screen can switch this off while the
       // interval is already running, and it should take effect on the next tick, not the
       // next reload.
-      if (!(await readSyncEnabled(store))) return;
+      if (!(await readSyncEnabled(store))) {
+        dispatch(firstPullFinished());
+        return;
+      }
       syncing.current = true;
       try {
         const result = await engine.sync();
@@ -91,13 +103,16 @@ export function SessionBootstrap({ children }: { readonly children: ReactNode })
         // because every local change is still recorded as pending.
       } finally {
         syncing.current = false;
+        // Failed or not, loading 1b lets go here: the next tick is a minute away, and a
+        // screen that waits on it has no end the person can see.
+        dispatch(firstPullFinished());
       }
     };
 
     void run();
     const timer = setInterval(() => void run(), SYNC_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [auth.status, auth.firstSyncPending, store, clock, queryClient]);
+  }, [auth.status, auth.firstSyncPending, store, clock, queryClient, dispatch]);
 
   return <>{children}</>;
 }

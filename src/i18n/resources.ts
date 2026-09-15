@@ -932,6 +932,23 @@ const enCommon = {
     },
     failed: "That did not work. Nothing was changed, so you can try again.",
   },
+  /** Loading 1b: between signing in and a shelf this browser has never pulled. */
+  firstPull: {
+    title: "Getting your shelf",
+    lede: "A moment while the three parts come in.",
+    signedInAs: "Signed in as {{email}}",
+    progressLabel: "Shelf loading progress",
+    step: {
+      collection: "Your collection",
+      wishlist: "Wishlist",
+      catalogue: "Titles and covers",
+    },
+    items_one: "{{count}} item",
+    items_other: "{{count}} items",
+    fetching: "fetching",
+    queued: "queued",
+    footnote: "Your shelf opens as soon as the last part is in.",
+  },
   authPanel: {
     signInHeadline: "Every copy you own, on one shelf.",
     signInBody:
@@ -2340,6 +2357,22 @@ const deCommon: CommonSchema = {
       show: "Zeigen",
     },
     failed: "Das hat nicht geklappt. Es wurde nichts geändert, du kannst es erneut versuchen.",
+  },
+  firstPull: {
+    title: "Dein Regal wird geladen",
+    lede: "Einen Moment, die drei Teile kommen gerade an.",
+    signedInAs: "Angemeldet als {{email}}",
+    progressLabel: "Fortschritt beim Laden des Regals",
+    step: {
+      collection: "Deine Sammlung",
+      wishlist: "Wunschliste",
+      catalogue: "Titel und Cover",
+    },
+    items_one: "{{count}} Eintrag",
+    items_other: "{{count}} Einträge",
+    fetching: "lädt",
+    queued: "wartet",
+    footnote: "Dein Regal öffnet sich, sobald der letzte Teil da ist.",
   },
   authPanel: {
     signInHeadline: "Jedes Exemplar, das du besitzt, in einem Regal.",

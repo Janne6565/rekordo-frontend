@@ -110,7 +110,7 @@ export function SharedDetailModal({
         <Close className="absolute top-3.5 right-3.5 max-sm:hidden" />
 
         <div className="flex gap-8 max-sm:flex-col max-sm:gap-0">
-          <div className="aspect-square w-[330px] flex-none overflow-hidden rounded-[10px] max-sm:mt-1.5 max-sm:w-full max-sm:rounded-xl">
+          <div className="aspect-square w-[330px] flex-none self-start overflow-hidden rounded-[10px] max-sm:mt-1.5 max-sm:w-full max-sm:rounded-xl">
             {item.art}
           </div>
 

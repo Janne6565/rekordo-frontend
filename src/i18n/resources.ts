@@ -533,6 +533,27 @@ const enCommon = {
     add: "Add to library",
     added: "Added",
   },
+  pressingStep: {
+    back: "Back to results",
+    step: "Step 2 of 2 · optional",
+    toShelf: "going to your shelf",
+    toWishlist: "going to your wishlist",
+    anyPressing: "Any pressing",
+    anyPressingHint:
+      "Most people stop here. The record is yours; which pressing stays unanswered rather than guessed.",
+    orNameIt_one: "Or name it · {{count}} pressing",
+    orNameIt_other: "Or name it · {{count}} pressings",
+    sortedByYear: "sorted by year",
+    showAll: "Show all {{count}}",
+    /** Not a failure: plenty of records have no catalogued pressing to name. */
+    nonePressings: "No pressings to choose from. The record still goes on as it is.",
+    pressingsFailed: "The pressings could not be loaded. Any pressing still works.",
+    addingAs: "Adding as: {{summary}}",
+    anyPressingSummary: "any pressing",
+    cancel: "Cancel",
+    addToShelf: "Add to shelf",
+    addToWishlist: "Add to wishlist",
+  },
   addDialog: {
     title: "Add a copy",
     /** Turn 10: the search step lists records, and the pressing is the next question. */
@@ -1970,6 +1991,27 @@ const deCommon: CommonSchema = {
     noResults: "Nichts zu dieser Suche gefunden.",
     add: "Zur Sammlung",
     added: "Hinzugefügt",
+  },
+  pressingStep: {
+    back: "Zurück zu den Treffern",
+    step: "Schritt 2 von 2 · freiwillig",
+    toShelf: "kommt ins Regal",
+    toWishlist: "kommt auf die Wunschliste",
+    anyPressing: "Beliebige Pressung",
+    anyPressingHint:
+      "Die meisten hören hier auf. Die Platte gehört dir; welche Pressung, bleibt offen statt geraten.",
+    orNameIt_one: "Oder benennen · {{count}} Pressung",
+    orNameIt_other: "Oder benennen · {{count}} Pressungen",
+    sortedByYear: "nach Jahr sortiert",
+    showAll: "Alle {{count}} anzeigen",
+    nonePressings: "Keine Pressungen zur Auswahl. Die Platte kommt trotzdem so hinzu.",
+    pressingsFailed:
+      "Die Pressungen konnten nicht geladen werden. Beliebige Pressung geht trotzdem.",
+    addingAs: "Wird hinzugefügt: {{summary}}",
+    anyPressingSummary: "beliebige Pressung",
+    cancel: "Abbrechen",
+    addToShelf: "Ins Regal",
+    addToWishlist: "Auf die Wunschliste",
   },
   addDialog: {
     /** Turn 10: the search step lists records, and the pressing is the next question. */

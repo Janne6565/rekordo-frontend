@@ -147,6 +147,21 @@ export function useAddDialogLogic(
   const [openArtist, setOpenArtist] = useState<Artist | null>(null);
 
   /**
+   * The record whose pressing step is open, and where it is headed.
+   *
+   * Null is the results list. The step replaces the list inside the same modal rather than
+   * stacking a dialog on a dialog, so this is a mode of the one sheet and not a second one.
+   */
+  const [step, setStep] = useState<{
+    readonly album: Album;
+    readonly destination: "SHELF" | "WISHLIST";
+  } | null>(null);
+  /** Null is "any pressing", which is the answer the step opens with. */
+  const [pressing, setPressing] = useState<Release | null>(null);
+  /** Null is "whatever the pressing says", and the only answer an album alone can give. */
+  const [stepFormat, setStepFormat] = useState<Format | null>(null);
+
+  /**
    * A typed query answers with records; a scanned one still answers with pressings.
    *
    * The two are not the same question. Barcodes are printed on objects, so a scan has
@@ -276,14 +291,17 @@ export function useAddDialogLogic(
    * from what the copy itself carries.
    */
   const addAlbum = useMutation({
-    mutationFn: async (album: Album) => {
-      const copy = createAlbumCopy(
+    mutationFn: async ({ album, format: chosen }: { album: Album; format: Format | null }) => {
+      const base = createAlbumCopy(
         album,
         emptyDraft(await readDefaultCurrency(store)),
         clock,
         Date.now(),
         crypto.randomUUID(),
       );
+      // A format chosen without a pressing is the copy's own answer, not a catalogue's,
+      // which is what manualFormat means everywhere else in the app.
+      const copy = chosen === null ? base : applyCopyPatch(base, { manualFormat: chosen }, clock);
       await store.putCopy(copy);
       await rememberCopyOrigins(store, [copy.id], "MANUAL");
       return copy;
@@ -306,7 +324,7 @@ export function useAddDialogLogic(
    * is: a record has no format until somebody says which copy they are after.
    */
   const wishAlbum = useMutation({
-    mutationFn: async (album: Album) => {
+    mutationFn: async ({ album, format: chosen }: { album: Album; format: Format | null }) => {
       const item = createWishlistItem(
         {
           albumId: album.albumId,
@@ -314,7 +332,7 @@ export function useAddDialogLogic(
           title: album.title,
           artistName: album.artistName,
           year: album.year,
-          desiredFormat: null,
+          desiredFormat: chosen === null ? null : asWishFormat(chosen),
           note: null,
         },
         clock,
@@ -613,24 +631,51 @@ export function useAddDialogLogic(
       add.mutate(release);
     },
     addingMbid: add.isPending ? add.variables?.id : undefined,
-    /**
-     * The shelf pill on a record row: saved with no pressing named.
-     *
-     * Deliberately not routed through a pressing picker first. The design's own wording
-     * is that most people stop here, so the pill has to be the whole action; naming a
-     * pressing is the optional step, not a gate in front of this one.
-     */
-    addAlbum: (album: Album) => {
-      if (submitted !== "" && !BARCODE.test(submitted)) remember(submitted);
-      addAlbum.mutate(album);
-    },
-    addingAlbumId: addAlbum.isPending ? addAlbum.variables?.albumId : undefined,
     /** Whether a record already on the shelf is this one, by whichever id the copy knows. */
     isOwnedAlbum: (album: Album) => owned.data?.has(album.albumId) === true,
     ownedAlbumCopy: (album: Album) => owned.data?.get(album.albumId) ?? null,
-    /** The heart pill on a record row: written on the click, like the shelf pill beside it. */
-    addWishAlbum: (album: Album) => wishAlbum.mutate(album),
-    wishingAlbumId: wishAlbum.isPending ? wishAlbum.variables?.albumId : undefined,
+    /**
+     * A destination pill on a record row opens the pressing step rather than saving.
+     *
+     * The change turn 10 makes to turn 05's rule that a copy saves the moment you click.
+     * A record is not a pressing, so there is one question left to ask -- and the step
+     * asks it with "Any pressing" already chosen and the button live, so answering it is
+     * a click and ignoring it is the same click.
+     */
+    openPressingStep: (album: Album, destination: "SHELF" | "WISHLIST") => {
+      if (submitted !== "" && !BARCODE.test(submitted)) remember(submitted);
+      setPressing(null);
+      setStepFormat(null);
+      setStep({ album, destination });
+    },
+    step,
+    closePressingStep: () => setStep(null),
+    pressing,
+    choosePressing: setPressing,
+    stepFormat,
+    chooseStepFormat: setStepFormat,
+    committingStep: addAlbum.isPending || add.isPending || wishAlbum.isPending || wish.isPending,
+    /**
+     * Saves what the step has been told, which may be nothing beyond the record itself.
+     *
+     * A named pressing takes the path a scan always took, so the release is cached and the
+     * copy points at it. An unnamed one writes the album and leaves `releaseId` null, and
+     * a format chosen without a pressing is the copy's own answer rather than a
+     * catalogue's -- which is exactly what `manualFormat` is for.
+     */
+    commitPressingStep: async () => {
+      if (step === null) return;
+      const { album, destination } = step;
+      if (destination === "WISHLIST") {
+        if (pressing === null) await wishAlbum.mutateAsync({ album, format: stepFormat });
+        else await wish.mutateAsync(pressing);
+      } else if (pressing === null) {
+        await addAlbum.mutateAsync({ album, format: stepFormat });
+      } else {
+        await add.mutateAsync(pressing);
+      }
+      setStep(null);
+    },
     /** The heart pill: the entry is written on the click, like the shelf pill beside it. */
     addWish: (release: Release) => wish.mutate(release),
     wishingMbid: wish.isPending ? wish.variables?.id : undefined,

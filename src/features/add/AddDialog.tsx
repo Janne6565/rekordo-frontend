@@ -5,6 +5,7 @@ import { Button, FieldSpinner, Modal, ModalClose, PulsingDots, Skeleton } from "
 import { ArtistPane } from "@/features/add/ArtistPane";
 import { ArtistResults } from "@/features/add/ArtistResults";
 import { ManualTab } from "@/features/add/ManualTab";
+import { PressingStep } from "@/features/add/PressingStep";
 import {
   type AddFormatFilter,
   type AddTab,
@@ -68,6 +69,19 @@ export function AddDialog({ onClose, onAdded, seedTerm = "", hunting = null }: A
   const { t } = useTranslation();
   const logic = useAddDialogLogic(onClose, seedTerm);
   const titleId = useId();
+
+  // The pressing step replaces the sheet's contents rather than opening a second dialog:
+  // it is a mode of this one, and its own back link is how you leave it.
+  if (logic.step !== null) {
+    return (
+      <Modal onClose={onClose} labelledBy={titleId} width="660px" phoneSheet sheetHeight="full">
+        <h2 id={titleId} className="sr-only">
+          {t("addDialog.title")}
+        </h2>
+        <PressingStep logic={logic} />
+      </Modal>
+    );
+  }
 
   return (
     <Modal onClose={onClose} labelledBy={titleId} width="660px" phoneSheet sheetHeight="full">
@@ -688,7 +702,13 @@ function RecordRow({ group, logic }: { readonly group: RecordGroup; readonly log
   );
 }
 
-/** The two destinations every row offers. Wishlist left, shelf right, everywhere. */
+/**
+ * The two destinations every row offers. Wishlist left, shelf right, everywhere.
+ *
+ * Neither saves on the click any more. A record is not a pressing, so there is one
+ * question left to ask, and these open the step that asks it -- with the answer already
+ * filled in, so saying "any pressing" costs the same click as not being asked at all.
+ */
 function AddPills({
   album,
   logic,
@@ -709,28 +729,23 @@ function AddPills({
       <Button
         variant={owned ? "secondary" : "primary"}
         action="wish.add"
-        onClick={() => logic.addWishAlbum(album)}
-        loading={logic.wishingAlbumId === album.albumId}
+        onClick={() => logic.openPressingStep(album, "WISHLIST")}
         className={`flex-none rounded-full ${size}`}
       >
-        {logic.wishingAlbumId !== album.albumId && (
-          <Heart size={icon} strokeWidth={2} aria-hidden />
-        )}
+        <Heart size={icon} strokeWidth={2} aria-hidden />
         {t("addDialog.wishlist")}
       </Button>
       <Button
         variant={owned ? "secondary" : "primary"}
         action="copy.add"
-        onClick={() => logic.addAlbum(album)}
-        loading={logic.addingAlbumId === album.albumId}
+        onClick={() => logic.openPressingStep(album, "SHELF")}
         className={`flex-none whitespace-nowrap rounded-full ${size}`}
       >
-        {logic.addingAlbumId !== album.albumId &&
-          (owned ? (
-            <CopyPlus size={icon} strokeWidth={2} aria-hidden />
-          ) : (
-            <LibraryBig size={icon} strokeWidth={2} aria-hidden />
-          ))}
+        {owned ? (
+          <CopyPlus size={icon} strokeWidth={2} aria-hidden />
+        ) : (
+          <LibraryBig size={icon} strokeWidth={2} aria-hidden />
+        )}
         {owned ? t("addDialog.secondCopy") : t("addDialog.shelf")}
       </Button>
     </div>

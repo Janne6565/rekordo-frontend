@@ -1,4 +1,4 @@
-import { searchReleases } from "@/api/releases";
+import { lookupByBarcode, searchAlbums } from "@/api/releases";
 import type { LocalStore, Release } from "@janne6565/rekordo-shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/releases", async (original) => ({
   ...(await original<typeof import("@/api/releases")>()),
-  searchReleases: vi.fn(async () => []),
+  searchAlbums: vi.fn(async () => []),
   lookupByBarcode: vi.fn(async () => []),
 }));
 
@@ -102,7 +102,7 @@ describe("useAddDialogLogic", () => {
     settings.clear();
     copies.length = 0;
     wishes = [];
-    vi.mocked(searchReleases).mockClear();
+    vi.mocked(searchAlbums).mockClear();
     vi.useFakeTimers();
   });
 
@@ -114,13 +114,13 @@ describe("useAddDialogLogic", () => {
     const { result } = harness();
 
     await type(result, "brian eno");
-    expect(searchReleases).not.toHaveBeenCalled();
+    expect(searchAlbums).not.toHaveBeenCalled();
 
     await settle();
 
     // Nine keystrokes, one request — the whole point of the debounce.
-    expect(searchReleases).toHaveBeenCalledTimes(1);
-    expect(searchReleases).toHaveBeenCalledWith("brian eno");
+    expect(searchAlbums).toHaveBeenCalledTimes(1);
+    expect(searchAlbums).toHaveBeenCalledWith("brian eno");
   });
 
   it("shows the wait from the keystroke, not from the request", async () => {
@@ -142,7 +142,7 @@ describe("useAddDialogLogic", () => {
       await vi.advanceTimersByTimeAsync(1000);
     });
 
-    expect(searchReleases).not.toHaveBeenCalled();
+    expect(searchAlbums).not.toHaveBeenCalled();
     expect(result.current.searching).toBe(false);
   });
 
@@ -154,7 +154,23 @@ describe("useAddDialogLogic", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1000);
     });
-    expect(searchReleases).not.toHaveBeenCalled();
+    expect(searchAlbums).not.toHaveBeenCalled();
+  });
+
+  it("sends a complete barcode to the barcode lookup, not the record search", async () => {
+    // The two are different questions. A barcode is printed on an object, so the scan has
+    // already picked the pressing out; answering it with records would throw that away.
+    const { result } = harness();
+    await act(async () => result.current.setTab("BARCODE"));
+
+    await type(result, "5099969476013");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+
+    expect(searchAlbums).not.toHaveBeenCalled();
+    expect(lookupByBarcode).toHaveBeenCalledWith("5099969476013");
+    expect(result.current.scanned).toBe(true);
   });
 
   it("runs straight away on Enter", async () => {
@@ -163,7 +179,7 @@ describe("useAddDialogLogic", () => {
     await act(async () => result.current.setTerm("brian eno"));
     await act(async () => result.current.submit());
 
-    expect(searchReleases).toHaveBeenCalledTimes(1);
+    expect(searchAlbums).toHaveBeenCalledTimes(1);
   });
 
   it("drops the results when the field is emptied", async () => {

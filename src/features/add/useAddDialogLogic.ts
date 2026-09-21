@@ -1,4 +1,4 @@
-import { lookupByBarcode, lookupRelease, searchReleases } from "@/api/releases";
+import { lookupByBarcode, lookupRelease, searchAlbums } from "@/api/releases";
 import { fromCsv } from "@/domain/csv";
 import { useSatisfyWishes } from "@/features/wishlist/useSatisfyWishes";
 import { useStore } from "@/local/StoreProvider";
@@ -10,6 +10,7 @@ import {
   rememberSearch,
 } from "@/local/settings";
 import type {
+  Album,
   Artist,
   Copy,
   CopyDraft,
@@ -20,10 +21,12 @@ import type {
 } from "@janne6565/rekordo-shared";
 import {
   MC_EXTENSION,
+  albumResults,
   applyCopyPatch,
   applyMcArchive,
   asWishFormat,
   catalogueKeyOf,
+  createAlbumCopy,
   createCopy,
   createManualCopy,
   createWishlistItem,
@@ -143,14 +146,27 @@ export function useAddDialogLogic(
    */
   const [openArtist, setOpenArtist] = useState<Artist | null>(null);
 
+  /**
+   * A typed query answers with records; a scanned one still answers with pressings.
+   *
+   * The two are not the same question. Barcodes are printed on objects, so a scan has
+   * already picked the pressing out for you and listing the record instead would throw
+   * that away. Typing a name cannot pick anything, which is the whole reason the search
+   * moved up a level.
+   */
+  const scanned = BARCODE.test(submitted.trim());
+
+  const albumsQuery = useQuery({
+    queryKey: ["albumSearch", submitted],
+    // Only runs once a search is actually submitted, so typing does not hammer the proxy.
+    enabled: submitted.trim() !== "" && !scanned,
+    queryFn: () => searchAlbums(submitted.trim()),
+  });
+
   const resultsQuery = useQuery({
     queryKey: ["releaseSearch", submitted],
-    // Only runs once a search is actually submitted, so typing does not hammer the proxy.
-    enabled: submitted.trim() !== "",
-    queryFn: () => {
-      const query = submitted.trim();
-      return BARCODE.test(query) ? lookupByBarcode(query) : searchReleases(query);
-    },
+    enabled: submitted.trim() !== "" && scanned,
+    queryFn: () => lookupByBarcode(submitted.trim()),
   });
 
   /**
@@ -247,6 +263,40 @@ export function useAddDialogLogic(
    * pointed at. Format and note stay editable on the wishlist itself, which is where
    * somebody actually curates the list rather than while they are still searching.
    */
+  /**
+   * Puts a record on the shelf without naming a pressing.
+   *
+   * The common path, and deliberately not a degraded one: writing whichever pressing the
+   * catalogue ranked first would record a guess as an answer, and nothing afterwards could
+   * tell it apart from a pressing somebody actually chose. Null says the honest thing and
+   * the pressing can still be named later.
+   *
+   * Nothing is cached alongside it the way a pressing is. There is no release row to keep,
+   * and the album's own metadata is not the app's to mirror -- the shelf draws this copy
+   * from what the copy itself carries.
+   */
+  const addAlbum = useMutation({
+    mutationFn: async (album: Album) => {
+      const copy = createAlbumCopy(
+        album,
+        emptyDraft(await readDefaultCurrency(store)),
+        clock,
+        Date.now(),
+        crypto.randomUUID(),
+      );
+      await store.putCopy(copy);
+      await rememberCopyOrigins(store, [copy.id], "MANUAL");
+      return copy;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["copies"] });
+      await queryClient.invalidateQueries({ queryKey: ["stats"] });
+      await queryClient.invalidateQueries({ queryKey: ["ownedMbids"] });
+      setSelected(null);
+      setAdded((counts) => ({ ...counts, shelf: counts.shelf + 1 }));
+    },
+  });
+
   const wish = useMutation({
     mutationFn: async (release: Release) => {
       await store.cacheReleases([release]);
@@ -400,6 +450,15 @@ export function useAddDialogLogic(
     return { kind: "MC", ...restored };
   }
 
+  /**
+   * The records and the singles, folded and split the way both clients draw them.
+   *
+   * Derived rather than stored: `albumResults` is a pure function of the answer, and
+   * keeping a copy of its output in state would be one more thing able to disagree with
+   * the query that produced it.
+   */
+  const { records, singles } = albumResults(albumsQuery.data ?? []);
+
   const all = resultsQuery.data ?? [];
   const results = format === "ALL" ? all : all.filter((release) => release.format === format);
 
@@ -486,11 +545,19 @@ export function useAddDialogLogic(
     }, []),
     results,
     /**
+     * One row per record, with the other editions of each folded underneath it, and the
+     * singles that merely share a title kept in their own block.
+     */
+    records,
+    singles,
+    /** A scan names a pressing; typing names a record. The list drawn differs with it. */
+    scanned,
+    /**
      * True from the keystroke, not from the request: the skeletons stand in for the wait
      * as a whole, and a debounce the reader cannot see is still a wait.
      */
-    searching: waiting || resultsQuery.isFetching,
-    failed: resultsQuery.isError && !waiting,
+    searching: waiting || (scanned ? resultsQuery.isFetching : albumsQuery.isFetching),
+    failed: (scanned ? resultsQuery.isError : albumsQuery.isError) && !waiting,
     hasSearched: submitted !== "" || waiting,
     submittedTerm: submitted,
     isOwned: (release: Release) => owned.data?.has(release.id) === true,
@@ -513,6 +580,21 @@ export function useAddDialogLogic(
       add.mutate(release);
     },
     addingMbid: add.isPending ? add.variables?.id : undefined,
+    /**
+     * The shelf pill on a record row: saved with no pressing named.
+     *
+     * Deliberately not routed through a pressing picker first. The design's own wording
+     * is that most people stop here, so the pill has to be the whole action; naming a
+     * pressing is the optional step, not a gate in front of this one.
+     */
+    addAlbum: (album: Album) => {
+      if (submitted !== "" && !BARCODE.test(submitted)) remember(submitted);
+      addAlbum.mutate(album);
+    },
+    addingAlbumId: addAlbum.isPending ? addAlbum.variables?.albumId : undefined,
+    /** Whether a record already on the shelf is this one, by whichever id the copy knows. */
+    isOwnedAlbum: (album: Album) => owned.data?.has(album.albumId) === true,
+    ownedAlbumCopy: (album: Album) => owned.data?.get(album.albumId) ?? null,
     /** The heart pill: the entry is written on the click, like the shelf pill beside it. */
     addWish: (release: Release) => wish.mutate(release),
     wishingMbid: wish.isPending ? wish.variables?.id : undefined,

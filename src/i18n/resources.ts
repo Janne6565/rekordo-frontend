@@ -527,7 +527,7 @@ const enCommon = {
     searchPlaceholder: "Search for a release or artist",
     hint: "Search by artist and title, or paste a barcode.",
     resultCount: "{{count}} releases",
-    searching: "Searching MusicBrainz…",
+    searching: "Searching…",
     failed: "Could not reach the release database. Try again in a moment.",
     noResults: "Nothing found for that search.",
     add: "Add to library",
@@ -583,7 +583,7 @@ const enCommon = {
     },
     searchPlaceholder: "Artist, title or catalog number",
     clearSearch: "Clear the search",
-    searchingSource: "Searching MusicBrainz",
+    searchingSource: "Searching",
     barcodePlaceholder: "Scan or type the barcode",
     /** 25c: the camera path the browser does not have, named where it would sit. */
     scanRow: {
@@ -1988,7 +1988,7 @@ const deCommon: CommonSchema = {
     searchPlaceholder: "Nach Veröffentlichung oder Künstler suchen",
     hint: "Nach Künstler und Titel suchen oder einen Barcode einfügen.",
     resultCount: "{{count}} Veröffentlichungen",
-    searching: "Suche bei MusicBrainz…",
+    searching: "Suche…",
     failed: "Die Datenbank ist gerade nicht erreichbar. Versuche es gleich noch einmal.",
     noResults: "Nichts zu dieser Suche gefunden.",
     add: "Zur Sammlung",
@@ -2045,7 +2045,7 @@ const deCommon: CommonSchema = {
     },
     searchPlaceholder: "Künstler, Titel oder Katalognummer",
     clearSearch: "Suche leeren",
-    searchingSource: "Suche bei MusicBrainz",
+    searchingSource: "Suche",
     barcodePlaceholder: "Barcode scannen oder eingeben",
     scanRow: {
       title: "Barcode scannen",

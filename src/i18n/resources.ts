@@ -535,6 +535,22 @@ const enCommon = {
   },
   addDialog: {
     title: "Add a copy",
+    /** Turn 10: the search step lists records, and the pressing is the next question. */
+    lede2:
+      "Find the record first. Which pressing you own is the next question, and an optional one.",
+    records: "Records",
+    sourceAppleMusic: "Apple Music",
+    recordCount: "{{results}} results, {{records}} records",
+    otherEditions_one: "{{count}} other edition",
+    otherEditions_other: "{{count}} other editions",
+    editionsHint: "Same record, different releases. Pick one only if that is the box you own.",
+    singlesAndEps: "Singles and EPs",
+    showMoreSingles_one: "Show {{count}} more single",
+    showMoreSingles_other: "Show {{count}} more singles",
+    singleTag: "single",
+    epTag: "ep",
+    laterHint: "Pressing, condition and price can be added any time from the copy.",
+
     lede: "Search matches artists and releases. Artists open their discography.",
     tab: {
       SEARCH: "Search",
@@ -1956,6 +1972,22 @@ const deCommon: CommonSchema = {
     added: "Hinzugefügt",
   },
   addDialog: {
+    /** Turn 10: the search step lists records, and the pressing is the next question. */
+    lede2:
+      "Finde zuerst die Platte. Welche Pressung du hast, ist die nächste Frage, und eine freiwillige.",
+    records: "Platten",
+    sourceAppleMusic: "Apple Music",
+    recordCount: "{{results}} Treffer, {{records}} Platten",
+    otherEditions_one: "{{count}} weitere Ausgabe",
+    otherEditions_other: "{{count}} weitere Ausgaben",
+    editionsHint:
+      "Dieselbe Platte, andere Veröffentlichungen. Wähle nur eine, wenn du genau diese Box hast.",
+    singlesAndEps: "Singles und EPs",
+    showMoreSingles_one: "{{count}} weitere Single anzeigen",
+    showMoreSingles_other: "{{count}} weitere Singles anzeigen",
+    singleTag: "single",
+    epTag: "ep",
+    laterHint: "Pressung, Zustand und Preis lassen sich jederzeit am Exemplar ergänzen.",
     title: "Exemplar hinzufügen",
     lede: "Die Suche findet Künstler und Veröffentlichungen. Künstler öffnen ihre Diskografie.",
     tab: {

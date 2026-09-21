@@ -1,4 +1,5 @@
 import { releaseDisambiguation } from "@/api/releases";
+import { AlbumArt } from "@/components/AlbumArt";
 import { ReleaseArt } from "@/components/ReleaseArt";
 import { Button, FieldSpinner, Modal, ModalClose, PulsingDots, Skeleton } from "@/components/ui";
 import { ArtistPane } from "@/features/add/ArtistPane";
@@ -13,12 +14,14 @@ import { useArtistSearchLogic } from "@/features/add/useArtistSearchLogic";
 import { ScanHandoffSheet } from "@/features/app/ScanHandoffSheet";
 import { appStoreUrl, mobilePlatform } from "@/lib/appStores";
 import { cn } from "@/lib/utils";
-import type { Format, Release, WishlistItem } from "@janne6565/rekordo-shared";
-import { CONDITION_SHORT, FORMAT_LABELS } from "@janne6565/rekordo-shared";
+import type { Album, Format, RecordGroup, Release, WishlistItem } from "@janne6565/rekordo-shared";
+import { CONDITION_SHORT, FORMAT_LABELS, editionLabel } from "@janne6565/rekordo-shared";
 import {
   ArrowUpLeft,
   Check,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Clock,
   CopyPlus,
   FileUp,
@@ -411,27 +414,7 @@ function Results({ logic }: { readonly logic: Logic }) {
       ) : logic.failed ? (
         <p className="pt-4 text-sm text-ink-muted">{t("add.failed")}</p>
       ) : (
-        <section>
-          <div className="flex items-center justify-between pt-4.5 pb-1">
-            <h3 className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-subtle">
-              {t("addDialog.matchCount", { count: logic.results.length })}
-            </h3>
-            {logic.results.length > 0 && (
-              <span className="text-[11.5px] font-medium text-ink-subtle">
-                {t("artists.sortedBy")}
-              </span>
-            )}
-          </div>
-          {logic.results.length === 0 ? (
-            <p className="py-3 text-[12.5px] text-ink-muted">
-              {t("addDialog.noReleasesButArtists")}
-            </p>
-          ) : (
-            logic.results.map((release) => (
-              <ResultRow key={release.id} release={release} logic={logic} />
-            ))
-          )}
-        </section>
+        <RecordResults logic={logic} />
       )}
     </>
   );
@@ -563,6 +546,263 @@ function NoMatches({ logic }: { readonly logic: Logic }) {
  * the right-hand one, because a second pressing is a normal thing to buy and hiding the
  * button is how a shelf ends up missing the record somebody was standing there holding.
  */
+
+/**
+ * What a search answers with: pressings for a scan, records for anything typed.
+ *
+ * The count names both numbers because they differ, and visibly so. Eight rows folding
+ * into five records is the change this turn is about, and saying only one of them would
+ * make the list look like it had lost something.
+ */
+function RecordResults({ logic }: { readonly logic: Logic }) {
+  const { t } = useTranslation();
+
+  if (logic.scanned) {
+    return (
+      <section>
+        <div className="flex items-center justify-between pt-4.5 pb-1">
+          <h3 className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-subtle">
+            {t("addDialog.matchCount", { count: logic.results.length })}
+          </h3>
+        </div>
+        {logic.results.map((release) => (
+          <ResultRow key={release.id} release={release} logic={logic} />
+        ))}
+      </section>
+    );
+  }
+
+  const found = logic.records.length + logic.singles.length;
+  if (found === 0) {
+    return (
+      <p className="py-3 text-[12.5px] text-ink-muted">{t("addDialog.noReleasesButArtists")}</p>
+    );
+  }
+
+  return (
+    <>
+      {logic.records.length > 0 && (
+        <section>
+          <div className="flex items-baseline justify-between pt-4.5 pb-1">
+            <h3 className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-subtle">
+              {t("addDialog.records")}
+            </h3>
+            <span className="font-mono text-[10px] text-ink-subtle">
+              {t("addDialog.recordCount", { results: found, records: logic.records.length })}
+            </span>
+          </div>
+          {logic.records.map((group) => (
+            <RecordRow key={group.album.albumId} group={group} logic={logic} />
+          ))}
+        </section>
+      )}
+      {logic.singles.length > 0 && <SinglesBlock singles={logic.singles} logic={logic} />}
+    </>
+  );
+}
+
+/**
+ * One record, with the other editions of it folded underneath.
+ *
+ * The count sits on the right rather than under the title: the dialog's rows are wide, and
+ * a chip beside the artist line reads as part of the record's name.
+ */
+function RecordRow({ group, logic }: { readonly group: RecordGroup; readonly logic: Logic }) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const { album, editions } = group;
+  const owned = logic.ownedAlbumCopy(album);
+
+  return (
+    <div className="border-t border-line">
+      <div className="flex items-center gap-3.5 py-3">
+        <AlbumArt album={album} size={56} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13.5px] font-semibold leading-tight">{album.title}</div>
+          <div className="truncate text-[11.5px] leading-snug text-ink-muted">
+            {album.artistName}
+            {album.year !== null && ` · ${album.year}`}
+          </div>
+          {owned !== null && (
+            <div className="flex items-center gap-1.5 truncate font-mono text-[10px] leading-snug text-accent-strong">
+              <LibraryBig size={11} strokeWidth={2.2} aria-hidden />
+              {owned.condition === null
+                ? t("addDialog.ownedNoGrade", { year: new Date(owned.addedAt).getFullYear() })
+                : t("addDialog.owned", {
+                    grade: CONDITION_SHORT[owned.condition],
+                    year: new Date(owned.addedAt).getFullYear(),
+                  })}
+            </div>
+          )}
+        </div>
+
+        {editions.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setOpen((was) => !was)}
+            aria-expanded={open}
+            className={`flex flex-none items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] transition-colors ${
+              open ? "bg-ink text-surface" : "bg-accent-soft text-accent-strong"
+            }`}
+          >
+            {t("addDialog.otherEditions", { count: editions.length })}
+            {open ? (
+              <ChevronUp size={11} strokeWidth={2.2} aria-hidden />
+            ) : (
+              <ChevronDown size={11} strokeWidth={2.2} aria-hidden />
+            )}
+          </button>
+        )}
+
+        <AddPills album={album} logic={logic} owned={owned !== null} />
+      </div>
+
+      {open && (
+        <div className="mb-1 ml-6.5 border-l border-line pl-4">
+          <p className="pt-2 pb-0.5 text-[11.5px] leading-normal text-ink-muted">
+            {t("addDialog.editionsHint")}
+          </p>
+          {editions.map((edition) => (
+            <div
+              key={edition.albumId}
+              className="flex items-center gap-3 border-t border-line py-2"
+            >
+              <div className="min-w-0 flex-1">
+                {/* Named by what makes it different: the record's own title is already on
+                    the row above, and repeating it in every child is noise. */}
+                <div className="truncate text-[12.5px] font-semibold leading-tight">
+                  {editionLabel(edition)}
+                </div>
+                {edition.year !== null && (
+                  <div className="truncate text-[11px] leading-snug text-ink-muted">
+                    {edition.year}
+                  </div>
+                )}
+              </div>
+              <AddPills album={edition} logic={logic} owned={logic.isOwnedAlbum(edition)} small />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** The two destinations every row offers. Wishlist left, shelf right, everywhere. */
+function AddPills({
+  album,
+  logic,
+  owned,
+  small = false,
+}: {
+  readonly album: Album;
+  readonly logic: Logic;
+  readonly owned: boolean;
+  readonly small?: boolean;
+}) {
+  const { t } = useTranslation();
+  const size = small ? "h-7 px-2.5 text-[11px]" : "h-8 px-3 text-xs";
+  const icon = small ? 12 : 13;
+
+  return (
+    <div className="flex flex-none gap-1.5">
+      <Button
+        variant={owned ? "secondary" : "primary"}
+        action="wish.add"
+        onClick={() => logic.addWishAlbum(album)}
+        loading={logic.wishingAlbumId === album.albumId}
+        className={`flex-none rounded-full ${size}`}
+      >
+        {logic.wishingAlbumId !== album.albumId && (
+          <Heart size={icon} strokeWidth={2} aria-hidden />
+        )}
+        {t("addDialog.wishlist")}
+      </Button>
+      <Button
+        variant={owned ? "secondary" : "primary"}
+        action="copy.add"
+        onClick={() => logic.addAlbum(album)}
+        loading={logic.addingAlbumId === album.albumId}
+        className={`flex-none whitespace-nowrap rounded-full ${size}`}
+      >
+        {logic.addingAlbumId !== album.albumId &&
+          (owned ? (
+            <CopyPlus size={icon} strokeWidth={2} aria-hidden />
+          ) : (
+            <LibraryBig size={icon} strokeWidth={2} aria-hidden />
+          ))}
+        {owned ? t("addDialog.secondCopy") : t("addDialog.shelf")}
+      </Button>
+    </div>
+  );
+}
+
+/** How many singles are shown before the block offers the rest. */
+const SHOWN_SINGLES = 1;
+
+/**
+ * The singles and EPs that merely share a title with the record above.
+ *
+ * Their own block, below the records, because a title search drowns in them: "if you
+ * leave" returns the record once and then four unrelated covers. Apple sends no type
+ * field, so the only thing that identifies them is that literal text in the title.
+ */
+function SinglesBlock({
+  singles,
+  logic,
+}: { readonly singles: readonly Album[]; readonly logic: Logic }) {
+  const { t } = useTranslation();
+  const [all, setAll] = useState(false);
+  const shown = all ? singles : singles.slice(0, SHOWN_SINGLES);
+  const hidden = singles.length - shown.length;
+
+  return (
+    <section>
+      <div className="flex items-baseline justify-between pt-5 pb-1">
+        <h3 className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-subtle">
+          {t("addDialog.singlesAndEps")}
+        </h3>
+        <span className="font-mono text-[10px] text-ink-subtle">{singles.length}</span>
+      </div>
+      {shown.map((single) => (
+        <div key={single.albumId} className="flex items-center gap-3 border-t border-line py-2.5">
+          <AlbumArt album={single} size={44} />
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="truncate text-[12.5px] font-semibold leading-tight">
+                {single.title}
+              </span>
+              <span className="flex-none rounded bg-ink/[0.07] px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.08em] text-ink-subtle">
+                {isEp(single.title) ? t("addDialog.epTag") : t("addDialog.singleTag")}
+              </span>
+            </div>
+            <div className="truncate text-[11px] leading-snug text-ink-muted">
+              {single.artistName}
+              {single.year !== null && ` · ${single.year}`}
+            </div>
+          </div>
+          <AddPills album={single} logic={logic} owned={logic.isOwnedAlbum(single)} small />
+        </div>
+      ))}
+      {hidden > 0 && (
+        <button
+          type="button"
+          onClick={() => setAll(true)}
+          className="flex w-full items-center justify-center gap-1.5 pt-3 pb-1 text-[12.5px] font-medium text-accent-strong"
+        >
+          {t("addDialog.showMoreSingles", { count: hidden })}
+          <ChevronDown size={14} strokeWidth={2} aria-hidden />
+        </button>
+      )}
+    </section>
+  );
+}
+
+/** Which of the two words to tag a row with, read the same way the split was made. */
+function isEp(title: string): boolean {
+  return /\bep$/i.test(title.trim());
+}
+
 export function ResultRow({
   release,
   logic,

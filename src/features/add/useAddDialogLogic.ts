@@ -297,6 +297,39 @@ export function useAddDialogLogic(
     },
   });
 
+  /**
+   * Wants a record, without naming a pressing.
+   *
+   * A wish has always been able to name only an album -- `releaseId` on it was optional
+   * long before a copy's was -- so this is the shape the entry was designed for rather
+   * than a concession. The desired format is left unset for the same reason the pressing
+   * is: a record has no format until somebody says which copy they are after.
+   */
+  const wishAlbum = useMutation({
+    mutationFn: async (album: Album) => {
+      const item = createWishlistItem(
+        {
+          albumId: album.albumId,
+          releaseId: null,
+          title: album.title,
+          artistName: album.artistName,
+          year: album.year,
+          desiredFormat: null,
+          note: null,
+        },
+        clock,
+        Date.now(),
+        crypto.randomUUID(),
+      );
+      await store.putWishlistItem(item);
+      return item;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["wishlist"] });
+      setAdded((counts) => ({ ...counts, wishlist: counts.wishlist + 1 }));
+    },
+  });
+
   const wish = useMutation({
     mutationFn: async (release: Release) => {
       await store.cacheReleases([release]);
@@ -595,6 +628,9 @@ export function useAddDialogLogic(
     /** Whether a record already on the shelf is this one, by whichever id the copy knows. */
     isOwnedAlbum: (album: Album) => owned.data?.has(album.albumId) === true,
     ownedAlbumCopy: (album: Album) => owned.data?.get(album.albumId) ?? null,
+    /** The heart pill on a record row: written on the click, like the shelf pill beside it. */
+    addWishAlbum: (album: Album) => wishAlbum.mutate(album),
+    wishingAlbumId: wishAlbum.isPending ? wishAlbum.variables?.albumId : undefined,
     /** The heart pill: the entry is written on the click, like the shelf pill beside it. */
     addWish: (release: Release) => wish.mutate(release),
     wishingMbid: wish.isPending ? wish.variables?.id : undefined,

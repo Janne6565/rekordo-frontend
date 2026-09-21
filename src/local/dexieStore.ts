@@ -10,6 +10,8 @@ import type {
 } from "@janne6565/rekordo-shared";
 import {
   FORMATS,
+  catalogueKeyOf,
+  catalogueKeysOf,
   compareManualOrder,
   copyFormat,
   isManualReleaseId,
@@ -202,6 +204,43 @@ class MusicCollectorDb extends Dexie {
           if (copy.sortIndex === undefined) copy.sortIndex = null;
         });
     });
+
+    /**
+     * A copy records the album, and the pressing becomes optional.
+     *
+     * The album is what the person picked; a pressing is a refinement of it, and one most
+     * people never make. Until now the copy had nowhere to say so, so whichever pressing
+     * the catalogue happened to rank first was written down as though it had been chosen.
+     *
+     * Existing rows are backfilled rather than left null, because null here does not mean
+     * "no album", it means "written before the field existed", and a copy with neither id
+     * belongs to nothing at all -- it would drop out of its own shelf grouping. The album
+     * comes from the cached release where one is held; a hand-entered `local:` copy is its
+     * own album, exactly as it is its own release. Anything the cache has never seen keeps
+     * null and resolves on the next sync, which is the same state mobile's migration
+     * leaves such a row in.
+     */
+    this.version(9)
+      .stores({ copies: "id, releaseId, albumId, createdAt, deletedAt" })
+      .upgrade(async (tx) => {
+        const albums = new Map<string, string>();
+        for (const release of await tx.table("releaseCache").toArray()) {
+          if (typeof release.id === "string" && typeof release.albumId === "string") {
+            albums.set(release.id, release.albumId);
+          }
+        }
+        await tx
+          .table("copies")
+          .toCollection()
+          .modify((copy: Record<string, unknown>) => {
+            if (copy.albumId !== undefined) return;
+            const releaseId = typeof copy.releaseId === "string" ? copy.releaseId : null;
+            copy.albumId =
+              releaseId === null
+                ? null
+                : (albums.get(releaseId) ?? (releaseId.startsWith("local:") ? releaseId : null));
+          });
+      });
   }
 }
 
@@ -287,10 +326,10 @@ export class DexieLocalStore implements LocalStore {
 
   async listCopies(filter: LibraryFilter = {}): Promise<Copy[]> {
     const copies = await this.db.copies.filter((copy) => copy.deletedAt === null).toArray();
-    const releases = await this.getReleases(copies.map((copy) => copy.releaseId));
+    const releases = await this.getReleases(catalogueKeysOf(copies));
 
     const matching = copies.filter((copy) => {
-      const release = releases.get(copy.releaseId);
+      const release = releases.get(catalogueKeyOf(copy) ?? "");
       if (
         filter.format !== undefined &&
         filter.format !== "ALL" &&
@@ -338,7 +377,13 @@ export class DexieLocalStore implements LocalStore {
     }
     const releases = await this.db.releaseCache.where("albumId").equals(albumId).toArray();
     const releaseIds = new Set(releases.map((release) => release.id));
-    return copies.filter((copy) => releaseIds.has(copy.releaseId));
+    // Either half is enough. A copy that named a pressing is found through the mirror as
+    // it always was; one that only ever named an album carries the answer itself, and
+    // matching on the pressing alone would lose it from its own album entirely.
+    return copies.filter(
+      (copy) =>
+        copy.albumId === albumId || (copy.releaseId !== null && releaseIds.has(copy.releaseId)),
+    );
   }
 
   async putCopy(copy: Copy): Promise<void> {
@@ -588,7 +633,7 @@ export class DexieLocalStore implements LocalStore {
 
   async stats(): Promise<CollectionStats> {
     const copies = await this.db.copies.filter((copy) => copy.deletedAt === null).toArray();
-    const releases = await this.getReleases(copies.map((copy) => copy.releaseId));
+    const releases = await this.getReleases(catalogueKeysOf(copies));
     return computeStats(copies, releases);
   }
 
@@ -648,7 +693,7 @@ export function computeStats(
   let totalSpentCents = 0;
 
   for (const copy of copies) {
-    const release = releases.get(copy.releaseId);
+    const release = releases.get(catalogueKeyOf(copy) ?? "");
     // The copy's own format, so the shelf chip and its count can never disagree.
     byFormat[copyFormat(copy, release)] += 1;
     if (release !== undefined) releaseGroups.add(release.albumId);
@@ -675,13 +720,15 @@ export function sortCopies(
   switch (sort) {
     case "ARTIST_ASC":
       return sorted.sort((a, b) =>
-        (releases.get(a.releaseId)?.artistName ?? "").localeCompare(
-          releases.get(b.releaseId)?.artistName ?? "",
+        (releases.get(catalogueKeyOf(a) ?? "")?.artistName ?? "").localeCompare(
+          releases.get(catalogueKeyOf(b) ?? "")?.artistName ?? "",
         ),
       );
     case "YEAR_DESC":
       return sorted.sort(
-        (a, b) => (releases.get(b.releaseId)?.year ?? 0) - (releases.get(a.releaseId)?.year ?? 0),
+        (a, b) =>
+          (releases.get(catalogueKeyOf(b) ?? "")?.year ?? 0) -
+          (releases.get(catalogueKeyOf(a) ?? "")?.year ?? 0),
       );
     case "ADDED_DESC":
       return sorted.sort((a, b) => b.createdAt - a.createdAt);

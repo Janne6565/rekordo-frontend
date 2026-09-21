@@ -23,6 +23,7 @@ import {
   applyCopyPatch,
   applyMcArchive,
   asWishFormat,
+  catalogueKeyOf,
   createCopy,
   createManualCopy,
   createWishlistItem,
@@ -171,10 +172,15 @@ export function useAddDialogLogic(
       const copies = await store.listCopies();
       const byRelease = new Map<string, { condition: Copy["condition"]; addedAt: number }>();
       for (const copy of copies) {
-        const existing = byRelease.get(copy.releaseId);
+        // Whatever the copy knows: a pressing when one was chosen, the album otherwise.
+        // Keying on the pressing alone would leave an album-only copy unmarked, and the
+        // row it belongs to would offer to add a record that is already on the shelf.
+        const key = catalogueKeyOf(copy);
+        if (key === null) continue;
+        const existing = byRelease.get(key);
         // The oldest one is the copy somebody thinks of as "the one I have".
         if (existing === undefined || copy.createdAt < existing.addedAt) {
-          byRelease.set(copy.releaseId, { condition: copy.condition, addedAt: copy.createdAt });
+          byRelease.set(key, { condition: copy.condition, addedAt: copy.createdAt });
         }
       }
       return byRelease;

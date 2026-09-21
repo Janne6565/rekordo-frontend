@@ -525,3 +525,104 @@ describe("the .mc archive over Dexie", () => {
     expect(await restored.listPhotosAwaitingUpload()).toHaveLength(1);
   });
 });
+
+/** A copy row as version 8 wrote it: no albumId anywhere on it. */
+const baseCopyRow = {
+  pendingBarcode: null,
+  manualTitle: null,
+  manualArtist: null,
+  manualYear: null,
+  manualLabel: null,
+  manualCatalogNumber: null,
+  manualFormat: null,
+  condition: null,
+  sleeveCondition: null,
+  catalogArt: "AUTO",
+  pricePaidCents: null,
+  currency: "EUR",
+  purchasedOn: null,
+  purchasedAt: null,
+  notes: null,
+  notesConflict: null,
+  rating: null,
+  hidden: false,
+  sortIndex: null,
+  createdAt: 1000,
+  deletedAt: null,
+  fieldClocks: {},
+};
+
+/**
+ * The upgrade that gave a copy its own album.
+ *
+ * Worth its own file because it is the only code here that runs against data already
+ * sitting in somebody's browser, and it runs exactly once. A copy that comes out of it
+ * with no album belongs to nothing: it drops out of its own shelf grouping, and there is
+ * no second chance to notice, because version 9 will never run on that database again.
+ */
+describe("the version 9 upgrade", () => {
+  beforeEach(async () => {
+    await Dexie.delete("music-collector");
+  });
+
+  /** A database as version 8 left it: copies with a pressing and no album at all. */
+  async function seedVersion8(
+    copies: readonly Record<string, unknown>[],
+    releases: readonly Record<string, unknown>[],
+  ): Promise<void> {
+    const old = new Dexie("music-collector");
+    old.version(8).stores({
+      copies: "id, releaseId, createdAt, deletedAt",
+      releaseCache: "id, albumId",
+      wishlist: "id, albumId, deletedAt",
+      photos: "id, copyId, wishId, storageKey, deletedAt",
+      photoBytes: "id",
+      meta: "key",
+      copyOrigins: "id",
+    });
+    await old.open();
+    await old.table("releaseCache").bulkAdd(releases as never[]);
+    await old.table("copies").bulkAdd(copies as never[]);
+    old.close();
+  }
+
+  async function albumIdsAfterUpgrade(): Promise<Map<string, unknown>> {
+    const store = new DexieLocalStore();
+    await store.open();
+    const copies = await store.listCopies();
+    return new Map(copies.map((copy) => [copy.id, copy.albumId]));
+  }
+
+  it("takes the album from the cached pressing", async () => {
+    await seedVersion8(
+      [{ ...baseCopyRow, id: "c-1", releaseId: "discogs:1" }],
+      [{ id: "discogs:1", albumId: "discogs:900" }],
+    );
+
+    expect((await albumIdsAfterUpgrade()).get("c-1")).toBe("discogs:900");
+  });
+
+  it("makes a hand-entered copy its own album", async () => {
+    // A `local:` pressing is in no catalogue, so nothing will ever resolve it for us; the
+    // copy is both the pressing and the record, exactly as it is on the phone.
+    await seedVersion8([{ ...baseCopyRow, id: "c-2", releaseId: "local:c-2" }], []);
+
+    expect((await albumIdsAfterUpgrade()).get("c-2")).toBe("local:c-2");
+  });
+
+  it("leaves an uncached pressing to the next sync rather than guessing", async () => {
+    // Null here means "not known yet", which resolves. A wrong album would not.
+    await seedVersion8([{ ...baseCopyRow, id: "c-3", releaseId: "discogs:404" }], []);
+
+    expect((await albumIdsAfterUpgrade()).get("c-3")).toBeNull();
+  });
+
+  it("does not disturb a copy that already carries an album", async () => {
+    await seedVersion8(
+      [{ ...baseCopyRow, id: "c-4", releaseId: "discogs:1", albumId: "discogs:already" }],
+      [{ id: "discogs:1", albumId: "discogs:900" }],
+    );
+
+    expect((await albumIdsAfterUpgrade()).get("c-4")).toBe("discogs:already");
+  });
+});

@@ -6,6 +6,8 @@ import { useStore } from "@/local/StoreProvider";
 import type { Release, WishFormat, WishlistItem } from "@janne6565/rekordo-shared";
 import {
   applyWishPatch,
+  catalogueKeyOf,
+  catalogueKeysOf,
   createPhoto,
   isManualReleaseId,
   sortWishlist,
@@ -115,9 +117,13 @@ export function useWishDetailsLogic(wishId: string, onClose: () => void) {
       const artist = shown?.artistName.trim().toLowerCase();
       if (artist === undefined || artist === "") return 0;
       const copies = await store.listCopies();
-      const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
+      const releases = await store.getReleases(catalogueKeysOf(copies));
       return copies.filter(
-        (copy) => releases.get(copy.releaseId)?.artistName.trim().toLowerCase() === artist,
+        (copy) =>
+          releases
+            .get(catalogueKeyOf(copy) ?? "")
+            ?.artistName.trim()
+            .toLowerCase() === artist,
       ).length;
     },
   });

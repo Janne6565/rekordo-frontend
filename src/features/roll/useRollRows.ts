@@ -1,4 +1,5 @@
 import { useStore } from "@/local/StoreProvider";
+import { catalogueKeyOf, catalogueKeysOf } from "@janne6565/rekordo-shared";
 import type { RollRow } from "@janne6565/rekordo-shared";
 import { useQuery } from "@tanstack/react-query";
 
@@ -18,8 +19,8 @@ export function useRollRows(): { readonly rows: readonly RollRow[]; readonly loa
     queryKey: ["copies", "ALL", "", "ADDED_DESC"],
     queryFn: async () => {
       const copies = await store.listCopies({ format: "ALL", search: "", sort: "ADDED_DESC" });
-      const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
-      return copies.map((copy) => ({ copy, release: releases.get(copy.releaseId) }));
+      const releases = await store.getReleases(catalogueKeysOf(copies));
+      return copies.map((copy) => ({ copy, release: releases.get(catalogueKeyOf(copy) ?? "") }));
     },
   });
 

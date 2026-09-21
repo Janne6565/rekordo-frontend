@@ -6,6 +6,7 @@ import { toCsv } from "@/domain/csv";
 import { useStore } from "@/local/StoreProvider";
 import { signedOut } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { catalogueKeysOf } from "@janne6565/rekordo-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -45,7 +46,7 @@ export function useYourDataLogic() {
   const exportCsv = useMutation({
     mutationFn: async () => {
       const copies = await store.listCopies();
-      const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
+      const releases = await store.getReleases(catalogueKeysOf(copies));
       download(
         new Blob([toCsv(copies, releases)], { type: "text/csv;charset=utf-8" }),
         `rekordo-${today()}.csv`,
@@ -94,7 +95,7 @@ export function useYourDataLogic() {
   /** What a device with no account has to hand over: its own store, and nothing else. */
   async function localExport() {
     const copies = await store.listCopies();
-    const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
+    const releases = await store.getReleases(catalogueKeysOf(copies));
     return {
       exportedAt: new Date().toISOString(),
       account: null,

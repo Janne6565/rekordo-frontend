@@ -3,6 +3,7 @@ import {
   CONDITIONS,
   DEFAULT_WISH_SORT,
   FORMATS,
+  catalogueKeyOf,
   copyFormat,
   formatCentsForInput,
   hasManualOrder,
@@ -75,10 +76,10 @@ function quote(value: string): string {
 export function toCsv(copies: readonly Copy[], releases: ReadonlyMap<string, Release>): string {
   const lines = [CSV_COLUMNS.join(",")];
   for (const copy of copies) {
-    const release = releases.get(copy.releaseId);
+    const release = releases.get(catalogueKeyOf(copy) ?? "");
     lines.push(
       [
-        copy.releaseId,
+        copy.releaseId ?? "",
         release?.title ?? "",
         release?.artistName ?? "",
         release?.year === null || release?.year === undefined ? "" : String(release.year),

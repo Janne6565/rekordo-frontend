@@ -3,6 +3,7 @@ import { useAppSelector } from "@/store/hooks";
 import type { Condition, Format, ManualRelease, Release } from "@janne6565/rekordo-shared";
 import {
   applyCopyPatch,
+  catalogueKeyOf,
   isManualCopy,
   parseIsoDate,
   parseMoneyToCents,
@@ -68,7 +69,7 @@ const BLANK: DetailFields = {
  * start winning conflicts against another device's real edits.
  */
 function manualPatch(
-  copy: { readonly releaseId: string; readonly manualFormat: Format | null },
+  copy: { readonly releaseId: string | null; readonly manualFormat: Format | null },
   fields: DetailFields,
   catalogFormat: Format | undefined,
 ): Partial<ManualRelease> {
@@ -121,7 +122,8 @@ export function useCopyDetailsLogic(copyId: string, onSaved: () => void) {
     queryFn: async () => {
       const copy = await store.getCopy(copyId);
       if (copy === undefined) return null;
-      const release: Release | undefined = await store.getRelease(copy.releaseId);
+      const key = catalogueKeyOf(copy);
+      const release: Release | undefined = key === null ? undefined : await store.getRelease(key);
       return { copy, release };
     },
   });

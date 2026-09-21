@@ -15,7 +15,12 @@ import { readPhotoBytes } from "@/local/photoBytes";
 import { readLastSyncedAt, readSyncEnabled, writeSyncEnabled } from "@/local/settings";
 import { accountChanged, signedOut } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { MC_MIME_TYPE, exportMcArchive, mcFileName } from "@janne6565/rekordo-shared";
+import {
+  MC_MIME_TYPE,
+  catalogueKeysOf,
+  exportMcArchive,
+  mcFileName,
+} from "@janne6565/rekordo-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
@@ -155,7 +160,7 @@ export function useAccountLogic() {
   const exportCsv = useMutation({
     mutationFn: async () => {
       const copies = await store.listCopies();
-      const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
+      const releases = await store.getReleases(catalogueKeysOf(copies));
       download("rekordo", toCsv(copies, releases));
       return copies.length;
     },
@@ -190,7 +195,7 @@ export function useAccountLogic() {
     mutationFn: async () => {
       const exportedAt = new Date();
       const [copies, wishlist] = await Promise.all([store.listCopies(), store.listWishlist()]);
-      const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
+      const releases = await store.getReleases(catalogueKeysOf(copies));
       const archive = await exportMcArchive(
         store,
         { collection: toCsv(copies, releases), wishlist: wishlistToCsv(wishlist) },

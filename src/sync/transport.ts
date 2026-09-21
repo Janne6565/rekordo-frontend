@@ -188,7 +188,9 @@ function toDto(copy: Copy): SyncCopyDto {
 export function fromDto(dto: SyncCopyDto): Copy | null {
   if (
     dto.id == null ||
-    dto.releaseId == null ||
+    // Null is a copy whose pressing nobody chose, which is ordinary now; only an absent
+    // field is malformed. Dropping it here would lose the record on the way in.
+    dto.releaseId === undefined ||
     dto.currency == null ||
     dto.createdAt == null ||
     dto.fieldClocks == null
@@ -198,6 +200,8 @@ export function fromDto(dto: SyncCopyDto): Copy | null {
   return {
     id: dto.id,
     releaseId: dto.releaseId,
+    // Absent means a server older than the field, which reads as an album nobody named.
+    albumId: dto.albumId ?? null,
     pendingBarcode: dto.pendingBarcode ?? null,
     manualTitle: dto.manualTitle ?? null,
     manualArtist: dto.manualArtist ?? null,

@@ -24,6 +24,7 @@ const release: Release = {
 const copy: Copy = {
   id: "c1",
   releaseId: "r1",
+  albumId: null,
   pendingBarcode: null,
   manualTitle: null,
   manualArtist: null,

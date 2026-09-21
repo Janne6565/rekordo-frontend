@@ -3,7 +3,13 @@ import { useUndo } from "@/features/detail/UndoDelete";
 import { markBackNavigation } from "@/lib/motion";
 import { useStore } from "@/local/StoreProvider";
 import type { Copy, CopyDraft, Release } from "@janne6565/rekordo-shared";
-import { DURATION, applyCopyPatch, tombstoneCopy } from "@janne6565/rekordo-shared";
+import {
+  DURATION,
+  applyCopyPatch,
+  catalogueKeyOf,
+  catalogueKeysOf,
+  tombstoneCopy,
+} from "@janne6565/rekordo-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -32,17 +38,21 @@ export function useDetailLogic(copyId: string) {
       const copy = await store.getCopy(copyId);
       if (copy === undefined) return null;
 
-      const release = await store.getRelease(copy.releaseId);
+      const key = catalogueKeyOf(copy);
+      const release = key === null ? undefined : await store.getRelease(key);
       const siblings =
         release === undefined ? [] : await store.listCopiesInReleaseGroup(release.albumId);
-      const releases = await store.getReleases(siblings.map((sibling) => sibling.releaseId));
+      const releases = await store.getReleases(catalogueKeysOf(siblings));
 
       return {
         copy,
         release,
         otherCopies: siblings
           .filter((sibling) => sibling.id !== copy.id)
-          .map((sibling) => ({ copy: sibling, release: releases.get(sibling.releaseId) })),
+          .map((sibling) => ({
+            copy: sibling,
+            release: releases.get(catalogueKeyOf(sibling) ?? ""),
+          })),
       };
     },
   });

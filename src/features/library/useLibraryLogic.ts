@@ -12,6 +12,8 @@ import type {
 } from "@janne6565/rekordo-shared";
 import {
   applyCopyPatch,
+  catalogueKeyOf,
+  catalogueKeysOf,
   hasArrangedOrder,
   libraryOrderWrites,
   moveCopy,
@@ -92,8 +94,8 @@ export function useLibraryLogic() {
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const copies = await store.listCopies({ format, search: searchTerm, sort: SHELF_ORDER });
-      const releases = await store.getReleases(copies.map((copy) => copy.releaseId));
-      return copies.map((copy) => ({ copy, release: releases.get(copy.releaseId) }));
+      const releases = await store.getReleases(catalogueKeysOf(copies));
+      return copies.map((copy) => ({ copy, release: releases.get(catalogueKeyOf(copy) ?? "") }));
     },
   });
 

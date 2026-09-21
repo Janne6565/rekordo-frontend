@@ -24,10 +24,11 @@ function release(id: string, overrides: Partial<Release> = {}): Release {
   };
 }
 
-function copy(id: string, releaseId: string, overrides: Partial<Copy> = {}): Copy {
+function copy(id: string, releaseId: string | null, overrides: Partial<Copy> = {}): Copy {
   return {
     id,
     releaseId,
+    albumId: null,
     pendingBarcode: null,
     manualTitle: null,
     manualArtist: null,

@@ -886,6 +886,8 @@ export type AlbumDtoPrimaryType = string | null;
 
 export type AlbumDtoCoverArtUrl = string | null;
 
+export type AlbumDtoCoverArtTemplate = string | null;
+
 export interface AlbumDto {
   albumId?: AlbumDtoAlbumId;
   title?: AlbumDtoTitle;
@@ -893,6 +895,7 @@ export interface AlbumDto {
   year?: AlbumDtoYear;
   primaryType?: AlbumDtoPrimaryType;
   coverArtUrl?: AlbumDtoCoverArtUrl;
+  coverArtTemplate?: AlbumDtoCoverArtTemplate;
 }
 
 export type DiscographyDtoAlbums = AlbumDto[] | null;
@@ -1242,6 +1245,19 @@ export type ReleasesInGroupParams = {
 /**
  * @minimum 1
  * @maximum 100
+ */
+limit?: number;
+};
+
+export type SearchAlbumsParams = {
+/**
+ * @minLength 0
+ * @maxLength 200
+ */
+q: string;
+/**
+ * @minimum 1
+ * @maximum 50
  */
 limit?: number;
 };

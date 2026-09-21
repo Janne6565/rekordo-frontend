@@ -12,6 +12,7 @@ for copies. The server participates only as a sync peer.
 import type {
   AlbumCoverDto,
   AlbumCoversParams,
+  AlbumDto,
   AlbumsOfArtistParams,
   ArtistDto,
   ArtistImageDto,
@@ -19,6 +20,7 @@ import type {
   GetReleasesParams,
   ReleaseDto,
   ReleasesInGroupParams,
+  SearchAlbumsParams,
   SearchArtistsParams,
   SearchParams,
   TracklistDto
@@ -146,6 +148,21 @@ export const releasesInGroup = (
       );
     }
   /**
+ * One row per record, which is what the add flow should list. /search answers with pressings, and a record with ten of them fills the screen ten times over with rows nobody can tell apart until they have already chosen one. Answered from Apple Music, whose catalogue has no pressings to multiply by, and from Discogs grouped by master when Apple has nothing or this deployment carries no key -- the shape is the same either way and a client cannot tell which replied.
+
+`coverArtTemplate` is Apple's resizable artwork, carrying literal `{w}x{h}` placeholders a client substitutes for the size it needs; it is null for a Discogs answer, where `coverArtUrl` is the only image there is. Nothing in this response is mirrored, so an id here is not yet something the mirror can be asked about.
+ * @summary Search albums by artist or title
+ */
+export const searchAlbums = (
+    params: SearchAlbumsParams,
+ ) => {
+      return customInstance<AlbumDto[]>(
+      {url: `/api/v1/metadata/albums/search`, method: 'GET',
+        params
+    },
+      );
+    }
+  /**
  * For screens that hold albums rather than pressings — a wishlist entry names an album, so it carries no cover of its own. Answered from the local mirror, never from a catalogue: a list of thirty rows is one request, not thirty upstream lookups. `coverArtUrl` is null where nothing known has a cover, and the URL may still 404, so clients keep their placeholder either way. Ids are echoed back exactly as they were asked for; hand-entered `local:` albums are left out of the response entirely.
  * @summary The artwork for a set of albums
  */
@@ -167,4 +184,5 @@ export type SearchArtistsResult = NonNullable<Awaited<ReturnType<typeof searchAr
 export type ArtistImageResult = NonNullable<Awaited<ReturnType<typeof artistImage>>>
 export type AlbumsOfArtistResult = NonNullable<Awaited<ReturnType<typeof albumsOfArtist>>>
 export type ReleasesInGroupResult = NonNullable<Awaited<ReturnType<typeof releasesInGroup>>>
+export type SearchAlbumsResult = NonNullable<Awaited<ReturnType<typeof searchAlbums>>>
 export type AlbumCoversResult = NonNullable<Awaited<ReturnType<typeof albumCovers>>>

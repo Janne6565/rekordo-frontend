@@ -7,6 +7,9 @@ import {
   getReleases,
   releasesInGroup,
   search,
+  // Named on import: `searchAlbums` is the function this module exports, and the generated
+  // one is an implementation detail of it.
+  searchAlbums as searchAlbumsRequest,
   searchArtists,
 } from "@/api/generated/metadata/metadata";
 import type {
@@ -153,7 +156,39 @@ function toAlbum(dto: AlbumDto): Album | null {
     year: dto.year ?? null,
     primaryType: dto.primaryType ?? null,
     coverArtUrl: dto.coverArtUrl ?? null,
+    coverArtTemplate: dto.coverArtTemplate ?? null,
   };
+}
+
+/**
+ * Records matching a query, one row per record rather than per pressing.
+ *
+ * What the add dialog lists. `/search` answers with pressings, and a record with ten of
+ * them fills the dialog ten times over with rows nobody can tell apart until they have
+ * already chosen one.
+ *
+ * The rows arrive flat and in relevance order; `albumResults` is what turns them into the
+ * two blocks the screen draws, because the editions of one record and the singles that
+ * share its title are both distinguishable only by their titles.
+ */
+export async function searchAlbums(query: string, limit = 25): Promise<Album[]> {
+  const dtos = await searchAlbumsRequest({ q: query, limit });
+  return dtos.map(toAlbum).filter((album): album is Album => album !== null);
+}
+
+/**
+ * One album cover at the size it is actually drawn.
+ *
+ * Apple serves a single artwork asset at any dimension through a `{w}x{h}` placeholder, so
+ * a row asks for the 112px it draws rather than downloading 600 and scaling it in the
+ * browser. A Discogs answer has no template and one fixed image, which is returned as it
+ * is; null means neither, and the caller keeps its placeholder.
+ */
+export function albumCoverUrl(album: Album, pixels: number): string | null {
+  const template = album.coverArtTemplate;
+  if (template == null || template === "") return album.coverArtUrl;
+  const size = String(Math.round(pixels * (globalThis.devicePixelRatio ?? 1)));
+  return template.replace("{w}", size).replace("{h}", size);
 }
 
 export interface Discography {

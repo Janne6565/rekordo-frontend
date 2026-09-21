@@ -1,8 +1,14 @@
 import type { ReleaseDto } from "@/api/generated/rekordoAPI.schemas";
-import { lookupAlbumCovers, releaseDisambiguation, toRelease, toReleases } from "@/api/releases";
-import type { LocalStore } from "@janne6565/rekordo-shared";
+import {
+  albumCoverUrl,
+  lookupAlbumCovers,
+  releaseDisambiguation,
+  toRelease,
+  toReleases,
+} from "@/api/releases";
+import type { Album, LocalStore } from "@janne6565/rekordo-shared";
 import { rememberArchivedAlbumCovers } from "@janne6565/rekordo-shared";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const albumCovers = vi.hoisted(() => vi.fn());
 vi.mock("@/api/generated/metadata/metadata", () => ({ albumCovers }));
@@ -189,5 +195,60 @@ describe("lookupAlbumCovers", () => {
 
       expect(covers.get("discogs:2")).toBeNull();
     });
+  });
+});
+
+/**
+ * Asking Apple for the size actually drawn.
+ *
+ * The whole reason the template is carried at all: one artwork asset serves 8 KB at a
+ * phone row's 112px and 45 KB at a detail sheet's 600. Substituting it wrongly does not
+ * fail, it silently downloads the wrong size, or renders a URL with braces still in it.
+ */
+describe("albumCoverUrl", () => {
+  const album = (overrides: Partial<Album>): Album => ({
+    albumId: "applemusic:1",
+    title: "Nevermind",
+    artistName: "Nirvana",
+    year: 1991,
+    primaryType: null,
+    coverArtUrl: null,
+    coverArtTemplate: null,
+    ...overrides,
+  });
+
+  const original = globalThis.devicePixelRatio;
+  afterEach(() => {
+    Object.defineProperty(globalThis, "devicePixelRatio", { value: original, configurable: true });
+  });
+
+  function pixelRatio(value: number): void {
+    Object.defineProperty(globalThis, "devicePixelRatio", { value, configurable: true });
+  }
+
+  it("fills both placeholders with the drawn size", () => {
+    pixelRatio(1);
+    expect(albumCoverUrl(album({ coverArtTemplate: "https://mz/x/{w}x{h}bb.jpg" }), 112)).toBe(
+      "https://mz/x/112x112bb.jpg",
+    );
+  });
+
+  it("asks for the device's pixels, not the layout's", () => {
+    // A 112px row on a 2x screen needs 224 real pixels; asking for 112 renders it soft.
+    pixelRatio(2);
+    expect(albumCoverUrl(album({ coverArtTemplate: "https://mz/x/{w}x{h}bb.jpg" }), 112)).toBe(
+      "https://mz/x/224x224bb.jpg",
+    );
+  });
+
+  it("falls back to the one fixed image a Discogs answer has", () => {
+    pixelRatio(2);
+    expect(albumCoverUrl(album({ coverArtUrl: "https://i.discogs.com/cover.jpg" }), 112)).toBe(
+      "https://i.discogs.com/cover.jpg",
+    );
+  });
+
+  it("has nothing to draw when neither is present", () => {
+    expect(albumCoverUrl(album({}), 112)).toBeNull();
   });
 });

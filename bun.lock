@@ -9,7 +9,7 @@
         "@fontsource-variable/newsreader": "^5.3.0",
         "@grafana/faro-web-sdk": "^2.11.0",
         "@grafana/faro-web-tracing": "^2.11.0",
-        "@janne6565/rekordo-shared": "0.35.0",
+        "@janne6565/rekordo-shared": "0.36.0",
         "@reduxjs/toolkit": "^2.5.0",
         "@tanstack/react-query": "^5.62.0",
         "@tanstack/react-router": "^1.95.0",
@@ -196,7 +196,7 @@
 
     "@ibm-cloud/openapi-ruleset-utilities": ["@ibm-cloud/openapi-ruleset-utilities@1.9.2", "", {}, "sha512-q9ZFdbtfxhaSeN6AykhVYk/EgkgV99dIW7ua15Wzy3s5BTH6tH1MZJA743QE9BQ+Iul/u1+XYNSaJm2/jiMQig=="],
 
-    "@janne6565/rekordo-shared": ["@janne6565/rekordo-shared@0.35.0", "https://npm.pkg.github.com/download/@janne6565/rekordo-shared/0.35.0/1b3b2f30d22251b54e30483d67a9d77c74788ab6", { "peerDependencies": { "react": ">=18" } }, "sha512-RwZ9THGNp7VOiQpfpoJSx0iqoobvLzKznpsEv4zkwKaCECwOgaib8jQogIxd2sCXNJ0Sow3WhXRF25OLzNrPXA=="],
+    "@janne6565/rekordo-shared": ["@janne6565/rekordo-shared@0.36.0", "https://npm.pkg.github.com/download/@janne6565/rekordo-shared/0.36.0/9eb68eff50d74d3d2e687aea145f98503fda1db6", { "peerDependencies": { "react": ">=18" } }, "sha512-Seu2WCXhsIltoz3cQ03qZFIt7S53ft1i570I3SEZypKezMxsfszWMlTshAAQtAkRb5ZX3SH1PSvT+dVDXm+Kqg=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 

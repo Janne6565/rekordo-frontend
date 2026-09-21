@@ -544,6 +544,8 @@ const enCommon = {
     orNameIt_one: "Or name it · {{count}} pressing",
     orNameIt_other: "Or name it · {{count}} pressings",
     sortedByYear: "sorted by year",
+    sortedByYearOnly: "{{format}} only · sorted by year",
+    noneOfThatFormat: "No {{format}} pressing is catalogued. Any pressing still works.",
     showAll: "Show all {{count}}",
     /** Not a failure: plenty of records have no catalogued pressing to name. */
     nonePressings: "No pressings to choose from. The record still goes on as it is.",
@@ -2003,6 +2005,9 @@ const deCommon: CommonSchema = {
     orNameIt_one: "Oder benennen · {{count}} Pressung",
     orNameIt_other: "Oder benennen · {{count}} Pressungen",
     sortedByYear: "nach Jahr sortiert",
+    sortedByYearOnly: "nur {{format}} · nach Jahr sortiert",
+    noneOfThatFormat:
+      "Keine {{format}}-Pressung ist katalogisiert. Beliebige Pressung geht trotzdem.",
     showAll: "Alle {{count}} anzeigen",
     nonePressings: "Keine Pressungen zur Auswahl. Die Platte kommt trotzdem so hinzu.",
     pressingsFailed:

@@ -2,6 +2,7 @@ import { lookupPressings } from "@/api/releases";
 import { AlbumArt } from "@/components/AlbumArt";
 import { FormatThumb } from "@/components/FormatThumb";
 import { Button } from "@/components/ui";
+import { pressingList } from "@/features/add/pressingList";
 import type { useAddDialogLogic } from "@/features/add/useAddDialogLogic";
 import type { Format, Release } from "@janne6565/rekordo-shared";
 import { FORMAT_LABELS } from "@janne6565/rekordo-shared";
@@ -43,8 +44,11 @@ export function PressingStep({ logic }: { readonly logic: Logic }) {
 
   if (step === null) return null;
   const { album, destination } = step;
-  const rows = pressings.data ?? [];
+  // Filtered and ordered before it is counted: "34 pressings" has to mean the 34 rows
+  // this list will actually show, not what Discogs happened to return.
+  const rows = pressingList(pressings.data ?? [], logic.stepFormat);
   const shown = all ? rows : rows.slice(0, SHOWN_PRESSINGS);
+  const chosenFormat = logic.stepFormat === null ? null : FORMAT_LABELS[logic.stepFormat];
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -81,7 +85,13 @@ export function PressingStep({ logic }: { readonly logic: Logic }) {
             <button
               key={format}
               type="button"
-              onClick={() => logic.chooseStepFormat(logic.stepFormat === format ? null : format)}
+              onClick={() => {
+                const next = logic.stepFormat === format ? null : format;
+                logic.chooseStepFormat(next);
+                // A chosen pressing the new filter hides would otherwise stay selected
+                // behind it, and the footer would name a row nobody can see.
+                if (next !== null && logic.pressing?.format !== next) logic.choosePressing(null);
+              }}
               aria-pressed={logic.stepFormat === format}
               className={`rounded-full px-3 py-1.5 text-xs transition-colors ${
                 logic.stepFormat === format
@@ -106,7 +116,11 @@ export function PressingStep({ logic }: { readonly logic: Logic }) {
         {pressings.isFetching ? null : pressings.isError ? (
           <p className="pt-5 text-[12.5px] text-ink-muted">{t("pressingStep.pressingsFailed")}</p>
         ) : rows.length === 0 ? (
-          <p className="pt-5 text-[12.5px] text-ink-muted">{t("pressingStep.nonePressings")}</p>
+          <p className="pt-5 text-[12.5px] text-ink-muted">
+            {chosenFormat === null
+              ? t("pressingStep.nonePressings")
+              : t("pressingStep.noneOfThatFormat", { format: chosenFormat })}
+          </p>
         ) : (
           <>
             <div className="flex items-baseline justify-between pt-5 pb-1">

@@ -1,6 +1,6 @@
 import { lookupPressings } from "@/api/releases";
 import { AlbumArt } from "@/components/AlbumArt";
-import { FormatThumb } from "@/components/FormatThumb";
+import { ReleaseArt } from "@/components/ReleaseArt";
 import { Button } from "@/components/ui";
 import { pressingList } from "@/features/add/pressingList";
 import type { useAddDialogLogic } from "@/features/add/useAddDialogLogic";
@@ -255,8 +255,11 @@ function PressingRow({
       aria-pressed={selected}
       className="flex w-full items-center gap-3.5 border-t border-line py-2.5 text-left"
     >
+      {/* ReleaseArt, not FormatThumb: FormatThumb's `cover` is a ReactNode to layer over
+          the paper, so handing it a URL string renders the URL as text. This is the
+          component that turns a release into its sleeve, and every other row uses it. */}
       <div className="h-[50px] w-[60px] flex-none">
-        <FormatThumb format={release.format} cover={release.coverArtUrl} />
+        <ReleaseArt release={release} />
       </div>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[13px] font-semibold leading-snug">{line}</span>

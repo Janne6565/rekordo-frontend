@@ -6,16 +6,12 @@ import { ArtistPane } from "@/features/add/ArtistPane";
 import { ArtistResults } from "@/features/add/ArtistResults";
 import { ManualTab } from "@/features/add/ManualTab";
 import { PressingStep } from "@/features/add/PressingStep";
-import {
-  type AddFormatFilter,
-  type AddTab,
-  useAddDialogLogic,
-} from "@/features/add/useAddDialogLogic";
+import { type AddTab, useAddDialogLogic } from "@/features/add/useAddDialogLogic";
 import { useArtistSearchLogic } from "@/features/add/useArtistSearchLogic";
 import { ScanHandoffSheet } from "@/features/app/ScanHandoffSheet";
 import { appStoreUrl, mobilePlatform } from "@/lib/appStores";
 import { cn } from "@/lib/utils";
-import type { Album, Format, RecordGroup, Release, WishlistItem } from "@janne6565/rekordo-shared";
+import type { Album, RecordGroup, Release, WishlistItem } from "@janne6565/rekordo-shared";
 import { CONDITION_SHORT, FORMAT_LABELS, editionLabel } from "@janne6565/rekordo-shared";
 import {
   ArrowUpLeft,
@@ -37,7 +33,6 @@ import {
 import { useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-const FILTERS: readonly AddFormatFilter[] = ["ALL", "VINYL", "CD", "CASSETTE", "DIGITAL"];
 // In the deck's order (14b): the two lookups, then the way in for what they cannot find.
 const TABS: readonly AddTab[] = ["SEARCH", "BARCODE", "MANUAL", "CSV"];
 
@@ -100,7 +95,7 @@ export function AddDialog({ onClose, onAdded, seedTerm = "", hunting = null }: A
               {t("addDialog.title")}
             </h2>
             <p className="mt-1 text-[12.5px] text-ink-muted">
-              {t(logic.tab === "MANUAL" ? "manual.lede" : "addDialog.lede")}
+              {logic.tab === "MANUAL" ? t("manual.lede") : t("addDialog.lede2")}
             </p>
           </div>
           <ModalClose onClose={onClose} label={t("common.close")} />
@@ -292,27 +287,6 @@ function SearchTab({
             </button>
           ) : null}
         </label>
-
-        {!barcode && (
-          <div className="mt-3 flex gap-1.5">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => logic.setFormat(filter)}
-                aria-pressed={logic.format === filter}
-                className={cn(
-                  "rounded-full px-2.75 py-1.25 text-[11.5px] transition-colors duration-(--mc-quick)",
-                  logic.format === filter
-                    ? "bg-ink font-semibold text-paper"
-                    : "border border-line bg-surface font-medium text-ink-muted hover:bg-canvas",
-                )}
-              >
-                {filter === "ALL" ? t("addDialog.allFormats") : FORMAT_LABELS[filter as Format]}
-              </button>
-            ))}
-          </div>
-        )}
       </form>
 
       {barcode && <ScanRow logic={logic} />}
@@ -397,7 +371,7 @@ function SheetFooter({ logic }: { readonly logic: Logic }) {
       )}
       {/* Under 640px the sentence takes three lines of a footer that is one line tall. */}
       <span className="hidden text-[11.5px] text-ink-muted sm:block">
-        {t("addDialog.savesInstantly")}
+        {t("addDialog.laterHint")}
       </span>
     </div>
   );

@@ -305,6 +305,18 @@ const enCommon = {
     startYourOwn: "Start your own shelf",
     footer: "Public page · condition, notes and prices are not shown",
   },
+  /** Turn 30: every dead end, from an unknown path to a copy that was deleted. */
+  notFound: {
+    eyebrow: "404 · Not found",
+    title: "This sleeve is empty.",
+    body: "Nothing lives at this address. The link may be old or incomplete.",
+    bodyNoHandle:
+      "This link ends before the collector's name. Ask whoever sent it for the full address.",
+    toLibrary: "Back to your library",
+    toStart: "Go to the start page",
+    findCollectors: "Find collectors",
+    itemTitle: "Nothing in the slot.",
+  },
   library: {
     title: "Library",
     formats: "Formats",
@@ -1774,6 +1786,16 @@ const deCommon: CommonSchema = {
     signIn: "Anmelden",
     startYourOwn: "Eigenes Regal anfangen",
     footer: "Öffentliche Seite · Zustand, Notizen und Preise werden nicht gezeigt",
+  },
+  notFound: {
+    eyebrow: "404 · Nicht gefunden",
+    title: "Diese Hülle ist leer.",
+    body: "Unter dieser Adresse liegt nichts. Der Link ist vielleicht alt oder unvollständig.",
+    bodyNoHandle: "Dieser Link endet vor dem Namen. Frag am besten nach der vollständigen Adresse.",
+    toLibrary: "Zurück zur Bibliothek",
+    toStart: "Zur Startseite",
+    findCollectors: "Sammler finden",
+    itemTitle: "Nichts mehr im Fach.",
   },
   library: {
     title: "Sammlung",

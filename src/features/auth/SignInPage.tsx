@@ -5,9 +5,9 @@ import { PasswordField } from "@/features/auth/PasswordField";
 import { ProviderIcon } from "@/features/auth/ProviderIcon";
 import type { AuthError } from "@/features/auth/useAuthLogic";
 import { useAuthLogic } from "@/features/auth/useAuthLogic";
+import { LegalLinksRow, LegalTextLink } from "@/features/legal/LegalLinks";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ChevronLeft, Disc3, HardDrive, Mail, User } from "lucide-react";
-import type { ReactNode } from "react";
 import { useEffect, useId } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
@@ -238,48 +238,12 @@ export function SignInPage() {
             </Link>
             <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
               <p className="text-[11.5px] text-ink-subtle">{t("auth.continueWithoutBody")}</p>
-              <SignInLegalFooter />
+              <LegalLinksRow />
             </div>
           </div>
         </div>
       </main>
     </div>
-  );
-}
-
-/**
- * The three links at the foot of screen 17a.
- *
- * The sign-in screen is outside the app shell, so it does not inherit the sidebar's legal
- * row -- and it is the one screen where somebody is about to agree to two of the three.
- */
-function SignInLegalFooter() {
-  const { t } = useTranslation();
-  return (
-    <div className="flex gap-3 text-[11px] text-ink-subtle">
-      <LegalTextLink doc="impressum">{t("legal.impressum")}</LegalTextLink>
-      <LegalTextLink doc="datenschutz">{t("legal.privacyShort")}</LegalTextLink>
-      <LegalTextLink doc="nutzungsbedingungen">{t("legal.termsShort")}</LegalTextLink>
-    </div>
-  );
-}
-
-/**
- * A legal document link inside running text.
- *
- * Its children come from `<Trans>` when it is used inside a sentence, which is why they are
- * optional: the interpolated element carries the text, and only the standalone uses below
- * pass their own.
- */
-function LegalTextLink({ doc, children }: { readonly doc: string; readonly children?: ReactNode }) {
-  return (
-    <Link
-      to="/legal/$doc"
-      params={{ doc }}
-      className="border-b border-accent/35 font-semibold text-accent no-underline hover:border-accent"
-    >
-      {children}
-    </Link>
   );
 }
 

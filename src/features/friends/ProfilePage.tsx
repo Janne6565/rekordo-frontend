@@ -12,6 +12,7 @@ import { useSharedCoverPhotos } from "@/features/friends/useSharedCoverPhotos";
 import { useSharedDetailLogic } from "@/features/friends/useSharedDetailLogic";
 import { useSharedWishCovers } from "@/features/friends/useSharedWishCovers";
 import { useCollectionStats } from "@/features/library/useLibraryLogic";
+import { UnknownCollector } from "@/features/notFound/NotFoundState";
 import { cn } from "@/lib/utils";
 import type { Condition, Format } from "@janne6565/rekordo-shared";
 import { CONDITION_SHORT, FORMAT_LABELS } from "@janne6565/rekordo-shared";
@@ -119,11 +120,8 @@ export function ProfileBody({
 
   if (logic.notFound || !person) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-        <h1 className="font-serif text-[22px]">{t("profile.notFound.title")}</h1>
-        <p className="text-[13px] text-ink-muted">
-          {t("profile.notFound.body", { handle: logic.handle })}
-        </p>
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-7 py-10 sm:p-10">
+        <UnknownCollector handle={logic.handle} signedIn={logic.signedIn} />
       </div>
     );
   }

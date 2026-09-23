@@ -19,3 +19,21 @@ export function requirePublicHandle(handle: string): void {
     throw notFound();
   }
 }
+
+/**
+ * Whether a path is the public link with the handle missing: `/@` or `/@/wishlist`.
+ *
+ * The same rule as the guard above, read back off the address, so the not-found page can
+ * say that the name is what is missing (30d) instead of printing a bare `@` as the path
+ * nobody could find.
+ */
+export function isBareHandlePath(pathname: string): boolean {
+  const first = pathname.split("/").find((segment) => segment !== "") ?? "";
+  let decoded = first;
+  try {
+    decoded = decodeURIComponent(first);
+  } catch {
+    // A malformed escape is not a handle of any kind; compare it as written.
+  }
+  return decoded.startsWith("@") && decoded.slice(1).trim() === "";
+}

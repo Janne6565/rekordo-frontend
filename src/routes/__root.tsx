@@ -1,9 +1,13 @@
 import { SignInConflictGate } from "@/features/auth/SignInConflict";
 import { UndoProvider } from "@/features/detail/UndoDelete";
 import { ConsentSlip } from "@/features/diagnostics";
+import { NotFoundPage } from "@/features/notFound/NotFoundPage";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
+  // Turn 30: any path nothing answers to, and every `notFound()` a route throws without a
+  // page of its own for it. Rendered in the root's outlet, so the providers below hold.
+  notFoundComponent: NotFoundPage,
   component: () => (
     // Above the router on purpose: a delete happens on the detail page and immediately
     // returns to the library, so the six seconds in which it can be taken back have to

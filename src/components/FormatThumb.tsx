@@ -269,3 +269,54 @@ function Plug() {
     </>
   );
 }
+
+interface EmptySleeveProps {
+  /**
+   * `sleeve` is the cover with the record gone: the stripes stay and a dashed ring stands
+   * where the disc would lean out. `slot` drops the sleeve as well and keeps only the
+   * outline of where it stood, which is what an item that no longer exists leaves behind.
+   */
+  readonly mode: "sleeve" | "slot";
+  /** What was asked for, written on the sleeve: an error code, a handle, or nothing. */
+  readonly label?: string;
+  readonly className?: string;
+}
+
+/**
+ * The not-found mark (turn 30): a library tile with nothing in it.
+ *
+ * Built from the same frame, paper and disc box as the format marks, so a miss reads as a
+ * gap on the shelf rather than as an error dialog. Decorative, like every other mark: the
+ * heading beside it says what happened.
+ */
+export function EmptySleeve({ mode, label, className }: EmptySleeveProps) {
+  return (
+    <div className={cn("relative flex h-full w-full justify-center", className)} aria-hidden>
+      <div className={cn("relative h-full", FRAME)}>
+        {mode === "sleeve" ? (
+          <>
+            <div className={cn(DISC, "border-[1.5px] border-dashed border-ink/25")} />
+            <div
+              className="absolute left-0 top-0 h-full w-[83.333%] rounded-[2px]"
+              style={{ boxShadow: "3px 1px 8px rgba(25,23,19,.16)" }}
+            >
+              <div
+                className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[2px] px-3"
+                style={PAPER}
+              >
+                {label !== undefined && label !== "" && (
+                  <span className="truncate rounded-[3px] bg-paper/85 px-2 py-1 font-mono text-[11px] font-medium tracking-[0.06em] text-ink-muted">
+                    {label}
+                  </span>
+                )}
+                <div className="absolute inset-0" style={COVER_EDGE} />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="absolute left-0 top-0 h-full w-[83.333%] rounded-[3px] border-[1.5px] border-dashed border-ink/25" />
+        )}
+      </div>
+    </div>
+  );
+}

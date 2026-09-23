@@ -3,6 +3,9 @@ import { AppBanner } from "@/features/app/AppBanner";
 import type { ProfileTab } from "@/features/friends/ProfilePage";
 import { ProfileBody } from "@/features/friends/ProfilePage";
 import { useProfileLogic } from "@/features/friends/useProfileLogic";
+import { NotFoundFrame } from "@/features/notFound/NotFoundPage";
+import { UnknownCollector } from "@/features/notFound/NotFoundState";
+import { useNotFoundLogic } from "@/features/notFound/useNotFoundLogic";
 import { OPERATOR, OPERATOR_ONE_LINE } from "@janne6565/rekordo-shared";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ShieldCheck } from "lucide-react";
@@ -30,6 +33,17 @@ export function PublicProfilePage({
   const { t } = useTranslation();
   const logic = useProfileLogic(handle.replace(/^@/, ""));
   const navigate = useNavigate();
+  const frame = useNotFoundLogic().frame;
+
+  // 30f: nobody by that name. The same frame as the 404 rather than this page's own header
+  // and banner, which would be offering a shelf that does not exist.
+  if (logic.notFound) {
+    return (
+      <NotFoundFrame frame={frame}>
+        <UnknownCollector handle={logic.handle} signedIn={logic.signedIn} />
+      </NotFoundFrame>
+    );
+  }
 
   return (
     <div className="flex min-h-full flex-col bg-paper text-ink">

@@ -1,6 +1,6 @@
 import { isNotFound } from "@tanstack/react-router";
 import { describe, expect, it } from "vitest";
-import { requirePublicHandle } from "./publicHandle";
+import { isBareHandlePath, requirePublicHandle } from "./publicHandle";
 
 function refuses(handle: string): boolean {
   try {
@@ -24,5 +24,21 @@ describe("requirePublicHandle", () => {
     expect(refuses("@")).toBe(true);
     expect(refuses("@ ")).toBe(true);
     expect(refuses("@\t ")).toBe(true);
+  });
+});
+
+describe("isBareHandlePath", () => {
+  it("recognises the public link with no name in it", () => {
+    expect(isBareHandlePath("/@")).toBe(true);
+    expect(isBareHandlePath("/@/wishlist")).toBe(true);
+    expect(isBareHandlePath("/%40")).toBe(true);
+    expect(isBareHandlePath("/@%20/wishlist")).toBe(true);
+  });
+
+  it("leaves a named handle and every other path alone", () => {
+    expect(isBareHandlePath("/@janne")).toBe(false);
+    expect(isBareHandlePath("/shelf/2019")).toBe(false);
+    expect(isBareHandlePath("/")).toBe(false);
+    expect(isBareHandlePath("/%E0%A4%A")).toBe(false);
   });
 });

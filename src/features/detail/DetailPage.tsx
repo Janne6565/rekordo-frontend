@@ -4,6 +4,7 @@ import { Button, buttonClassName } from "@/components/ui";
 import { CopyDetailsDialog } from "@/features/copy/CopyDetailsDialog";
 import { useDetailLogic } from "@/features/detail/useDetailLogic";
 import { useCollectionStats } from "@/features/library/useLibraryLogic";
+import { NotFoundState } from "@/features/notFound/NotFoundState";
 import { PhotoStrip } from "@/features/photos/PhotoStrip";
 import { type ShownImage, resolveShown } from "@/features/photos/shownImage";
 import { usePhotoStripLogic } from "@/features/photos/usePhotoStripLogic";
@@ -11,7 +12,7 @@ import { markBackNavigation } from "@/lib/motion";
 import type { Copy, Release } from "@janne6565/rekordo-shared";
 import { CONDITION_SHORT, FORMAT_LABELS, copyFormat } from "@janne6565/rekordo-shared";
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, CameraOff, PencilLine, Plus, Star } from "lucide-react";
+import { ArrowLeft, CameraOff, LibraryBig, PencilLine, Plus, Star } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -51,16 +52,23 @@ export function DetailPage({ copyId }: { readonly copyId: string }) {
   if (logic.data === null) {
     return (
       <AppShell stats={stats}>
-        <div className="flex flex-col items-start gap-4 p-8">
-          <p className="text-sm text-ink-muted">{t("detail.notFound")}</p>
-          <Link
-            to="/"
-            viewTransition
-            onClick={markBackNavigation}
-            className="text-sm text-accent underline"
-          >
-            {t("detail.back")}
-          </Link>
+        {/* 30g: the slot without its sleeve, no chip (an id tells nobody anything), and one
+            way back to the list the item came from. */}
+        <div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto px-7 py-10 sm:p-10">
+          <NotFoundState
+            mark="slot"
+            title={t("notFound.itemTitle")}
+            body={t("detail.notFound")}
+            actions={[
+              {
+                to: "/",
+                label: t("notFound.toLibrary"),
+                icon: LibraryBig,
+                viewTransition: true,
+                onClick: markBackNavigation,
+              },
+            ]}
+          />
         </div>
       </AppShell>
     );

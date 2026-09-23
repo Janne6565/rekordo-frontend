@@ -12,7 +12,10 @@ import { notFound } from "@tanstack/react-router";
  * that held on only one of them would be a hole rather than an inconsistency.
  */
 export function requirePublicHandle(handle: string): void {
-  if (!handle.startsWith("@")) {
+  // A bare `@` (or one followed only by whitespace) names nobody. Let through, the page
+  // would ask the API for `/profiles/` and dress Spring's static-resource 404 up as
+  // "Nobody goes by @.".
+  if (!handle.startsWith("@") || handle.slice(1).trim() === "") {
     throw notFound();
   }
 }

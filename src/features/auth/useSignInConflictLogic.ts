@@ -154,8 +154,11 @@ export function useSignInConflictLogic() {
    *
    * There is no question here — nothing on the far side to weigh anything against — so the
    * upload starts on its own and the screen is a statement, not a prompt.
+   *
+   * Once, from `idle` only: a *failed* upload used to count as idle too and restarted
+   * itself on the next render, so the retry never stayed on screen and the bar ran forever.
    */
-  const idle = !resolve.isPending && !resolve.isSuccess;
+  const idle = resolve.isIdle;
   useEffect(() => {
     if (current === "UPLOADING" && idle) keepBoth();
   }, [current, idle, keepBoth]);

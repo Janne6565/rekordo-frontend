@@ -191,6 +191,7 @@ export function ProfileBody({
             active={tab === "collection"}
             onClick={() => onTab("collection")}
             count={person.copyCount ?? 0}
+            locked={person.canSeeCollection === false}
           >
             {t("profile.tab.collection")}
           </TabButton>
@@ -198,6 +199,7 @@ export function ProfileBody({
             active={tab === "wishlist"}
             onClick={() => onTab("wishlist")}
             count={person.wishlistCount ?? 0}
+            locked={person.canSeeWishlist === false}
           >
             {t("profile.tab.wishlist")}
           </TabButton>
@@ -408,22 +410,31 @@ function monthAndYear(epochMillis: number, language: string): string {
  * The count is its own span rather than part of the label. Joined with " · " it was a
  * second word competing with the first at the same weight; beside it in mono and quieter
  * it reads as a quantity, and it dims further on the half you are not looking at.
+ *
+ * `locked` is a list the viewer may not read. That half cannot be picked, since all it
+ * would open is the locked shelf. The half already on screen keeps its raised look even
+ * when locked: the page under it says why, and a switch that showed no position at all
+ * would read as broken.
  */
 function TabButton({
   active,
   onClick,
   count,
+  locked,
   children,
 }: {
   readonly active: boolean;
   readonly onClick: () => void;
   readonly count: number;
+  readonly locked: boolean;
   readonly children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={locked}
+      aria-disabled={locked || undefined}
       // The route is what these switch, so the active half is the current page rather
       // than a pressed button.
       aria-current={active ? "page" : undefined}
@@ -432,7 +443,8 @@ function TabButton({
         "transition-colors duration-(--mc-quick)",
         active
           ? "bg-surface font-semibold text-ink shadow-[0_1px_2px_rgba(25,23,19,.08)]"
-          : "font-medium text-ink/55 hover:text-ink",
+          : "font-medium text-ink/55 enabled:hover:text-ink disabled:opacity-50",
+        "disabled:cursor-not-allowed",
       )}
     >
       {children}

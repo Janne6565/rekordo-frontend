@@ -260,3 +260,58 @@ describe("a shelf whose owner asked first", () => {
     expect(declineIt).toHaveBeenCalledWith("request-1");
   });
 });
+
+describe("the collection/wishlist switch", () => {
+  function switchFor(canSeeCollection: boolean | undefined, canSeeWishlist: boolean | undefined) {
+    const onTab = vi.fn();
+    const logic = logicFor(true);
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <ProfileBody
+          logic={
+            {
+              ...logic,
+              person: { ...logic.person, canSeeCollection, canSeeWishlist },
+            } as ReturnType<typeof useProfileLogic>
+          }
+          tab="collection"
+          onTab={onTab}
+          openId={undefined}
+          onOpen={vi.fn()}
+        />
+      </QueryClientProvider>,
+    );
+    return {
+      onTab,
+      collection: screen.getByRole("button", { name: /^Collection/ }) as HTMLButtonElement,
+      wishlist: screen.getByRole("button", { name: /^Wishlist/ }) as HTMLButtonElement,
+    };
+  }
+
+  it("locks the half whose list the viewer cannot read", () => {
+    const { onTab, collection, wishlist } = switchFor(true, false);
+
+    expect(collection.disabled).toBe(false);
+    expect(wishlist.disabled).toBe(true);
+    expect(wishlist.getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(wishlist);
+    expect(onTab).not.toHaveBeenCalled();
+  });
+
+  it("locks both halves of a private shelf and keeps the open one selected", () => {
+    const { collection, wishlist } = switchFor(false, false);
+
+    expect(collection.disabled).toBe(true);
+    expect(wishlist.disabled).toBe(true);
+    expect(collection.getAttribute("aria-current")).toBe("page");
+    expect(screen.getByText("This shelf is for friends")).toBeDefined();
+  });
+
+  it("leaves both halves alone while nothing is known about the lists", () => {
+    const { onTab, collection, wishlist } = switchFor(undefined, undefined);
+
+    expect(collection.disabled).toBe(false);
+    fireEvent.click(wishlist);
+    expect(onTab).toHaveBeenCalledWith("wishlist");
+  });
+});

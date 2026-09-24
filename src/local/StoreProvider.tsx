@@ -1,11 +1,19 @@
 import { DexieLocalStore } from "@/local/dexieStore";
-import type { ClockSource, LocalStore } from "@janne6565/rekordo-shared";
-import { hlcDecode, hlcEncode, hlcInitial, hlcTick } from "@janne6565/rekordo-shared";
+import type { ClockSource, LocalStore, LocalWriteSignal } from "@janne6565/rekordo-shared";
+import {
+  hlcDecode,
+  hlcEncode,
+  hlcInitial,
+  hlcTick,
+  observeLocalWrites,
+} from "@janne6565/rekordo-shared";
 import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 
 interface StoreContextValue {
   readonly store: LocalStore;
   readonly clock: ClockSource;
+  /** Every write that leaves something to push, so sync can push it within seconds. */
+  readonly localWrites: LocalWriteSignal;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -23,7 +31,9 @@ export function StoreProvider({ children }: { readonly children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const store = new DexieLocalStore();
+      // Every screen writes through the observed store, which is what lets the sync loop
+      // push an edit a moment after it lands instead of on the next minute's tick.
+      const { store, localWrites } = observeLocalWrites(new DexieLocalStore());
       await store.open();
       const node = await store.deviceId();
       const persisted = await store.readClock();
@@ -39,7 +49,7 @@ export function StoreProvider({ children }: { readonly children: ReactNode }) {
         },
       };
 
-      if (!cancelled) setValue({ store, clock });
+      if (!cancelled) setValue({ store, clock, localWrites });
     })();
     return () => {
       cancelled = true;

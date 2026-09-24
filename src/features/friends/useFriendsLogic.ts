@@ -121,6 +121,11 @@ export function useFriendsLogic() {
     queryTooShort: trimmed.length > 0 && trimmed.length < MIN_QUERY,
     /** Whether a real query has been asked — the difference between "nothing yet" and "nobody". */
     searched: trimmed.length >= MIN_QUERY,
+    /** Anything typed at all: on the phone's Find tab (2a) the results are then the whole tab. */
+    queryActive: trimmed.length > 0,
+    /** A real query whose answer came back empty, rather than one still on its way. */
+    nothingFound:
+      trimmed.length >= MIN_QUERY && !results.isFetching && (results.data ?? []).length === 0,
     ask,
     acceptRequest,
     declineRequest,

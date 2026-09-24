@@ -2,7 +2,7 @@
 import "@/i18n/config";
 import { FriendsPage } from "@/features/friends/FriendsPage";
 import type { useFriendsLogic } from "@/features/friends/useFriendsLogic";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -19,6 +19,7 @@ vi.mock("@/components/layout/AppShell", () => ({
 vi.mock("@/features/library/useLibraryLogic", () => ({ useCollectionStats: () => undefined }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, ...rest }: { readonly children: ReactNode }) => <a {...rest}>{children}</a>,
+  useNavigate: () => vi.fn(),
 }));
 
 const mocked = vi.hoisted(() => ({ logic: vi.fn() }));
@@ -37,6 +38,8 @@ function logicWith(overrides: Record<string, unknown> = {}): ReturnType<typeof u
     searching: false,
     queryTooShort: false,
     searched: true,
+    queryActive: true,
+    nothingFound: false,
     entries: [],
     loading: false,
     friends: [],
@@ -97,7 +100,9 @@ describe("FriendsPage under 640px", () => {
   it("shows a pending request in the pane whose tab counts it", () => {
     // The badge on Find says how many people are waiting, so Find has to be where they
     // are — a count pointing at a pane that does not contain them is a dead end.
-    mocked.logic.mockReturnValue(logicWith());
+    mocked.logic.mockReturnValue(
+      logicWith({ query: "", results: [], searched: false, queryActive: false }),
+    );
     render(<FriendsPage />);
 
     const cards = screen.getAllByText(/Lukas/);
@@ -114,6 +119,54 @@ describe("FriendsPage under 640px", () => {
   });
 });
 
+describe("FriendsPage Find tab while searching (2a)", () => {
+  it("makes the results the whole tab and says how to get the rest back", () => {
+    mocked.logic.mockReturnValue(logicWith({ friends: [{ id: "f-1", handle: "ole" }] }));
+    render(<FriendsPage />);
+
+    // Requests and People step aside on the phone only; the desktop keeps both.
+    const cards = screen.getAllByText(/Lukas/);
+    expect(cards.every((card) => hiddenOnPhone(card))).toBe(true);
+    const people = screen.getByText("People · 1");
+    expect(hiddenOnPhone(people)).toBe(true);
+    expect(hiddenOnDesktop(people)).toBe(false);
+
+    const phoneList = screen.getByText("Results · 1", { selector: "section div" });
+    expect(hiddenOnPhone(phoneList)).toBe(false);
+    const footnote = screen.getByText("Requests and People come back when you clear the search.");
+    expect(hiddenOnPhone(footnote)).toBe(false);
+    expect(hiddenOnDesktop(footnote)).toBe(true);
+  });
+
+  it("keeps counting requests on the Find badge while a query is active", () => {
+    mocked.logic.mockReturnValue(logicWith());
+    render(<FriendsPage />);
+
+    expect(screen.getByRole("button", { name: /Find/ }).textContent).toContain("1");
+  });
+
+  it("says why nothing is showing", () => {
+    mocked.logic.mockReturnValue(logicWith({ query: "zzzz", results: [], nothingFound: true }));
+    render(<FriendsPage />);
+
+    const said = screen.getAllByText("Nobody goes by that handle.");
+    expect(said.some((line) => !hiddenOnPhone(line))).toBe(true);
+  });
+
+  it("brings requests and people back once the field is empty", () => {
+    mocked.logic.mockReturnValue(
+      logicWith({ query: "", results: [], searched: false, queryActive: false }),
+    );
+    render(<FriendsPage />);
+
+    expect(screen.getAllByText(/Lukas/).some((card) => !hiddenOnPhone(card))).toBe(true);
+    expect(hiddenOnPhone(screen.getByText("People · 0"))).toBe(false);
+    expect(
+      screen.queryByText("Requests and People come back when you clear the search."),
+    ).toBeNull();
+  });
+});
+
 describe("FriendsPage with no account", () => {
   it("still searches, and offers sign-in instead of an Add button", () => {
     // The regression this exists for: the whole page was a login wall, so a handle handed
@@ -127,9 +180,66 @@ describe("FriendsPage with no account", () => {
   });
 
   it("says nobody goes by a handle that found nothing", () => {
-    mocked.logic.mockReturnValue(logicWith({ signedIn: false, results: [], searched: true }));
+    mocked.logic.mockReturnValue(
+      logicWith({ signedIn: false, results: [], searched: true, nothingFound: true }),
+    );
     render(<FriendsPage />);
 
     expect(screen.getByText("Nobody goes by that handle.")).toBeTruthy();
+  });
+});
+
+describe("FriendsPage search on the desktop", () => {
+  it("answers in a popover under the field, not above the feed", () => {
+    mocked.logic.mockReturnValue(logicWith());
+    render(<FriendsPage />);
+
+    const box = screen.getByRole("combobox");
+    expect(box.getAttribute("aria-expanded")).toBe("true");
+    const list = screen.getByRole("listbox");
+    expect(box.getAttribute("aria-controls")).toBe(list.id);
+
+    const option = within(list).getByRole("option");
+    expect(option.getAttribute("aria-selected")).toBe("true");
+    expect(box.getAttribute("aria-activedescendant")).toBe(option.id);
+    expect(within(option).getByText("Marta Knopf")).toBeTruthy();
+    expect(within(option).getByText("@martaknopf · 31 copies")).toBeTruthy();
+    expect(within(option).getByText("Add")).toBeTruthy();
+    const popover = within(box.parentElement as HTMLElement);
+    expect(popover.getByText("Results · 1")).toBeTruthy();
+    expect(popover.getByText("↑ ↓ move · Enter opens the shelf · Esc closes")).toBeTruthy();
+
+    // The only desktop copy of the result is the popover's; the feed column holds none.
+    const desktopHits = screen.getAllByText("Marta Knopf").filter((hit) => !hiddenOnDesktop(hit));
+    expect(desktopHits).toHaveLength(1);
+    expect(list.contains(desktopHits[0] ?? null)).toBe(true);
+  });
+
+  it("closes on Escape", () => {
+    mocked.logic.mockReturnValue(logicWith());
+    render(<FriendsPage />);
+
+    const box = screen.getByRole("combobox");
+    fireEvent.keyDown(box, { key: "Escape" });
+    expect(box.getAttribute("aria-expanded")).toBe("false");
+    expect(within(box.parentElement as HTMLElement).queryByText("Results · 1")).toBeNull();
+  });
+
+  it("asks for three characters inside the popover", () => {
+    mocked.logic.mockReturnValue(
+      logicWith({ query: "ma", results: [], searched: false, queryTooShort: true }),
+    );
+    render(<FriendsPage />);
+
+    const popover = within(screen.getByRole("combobox").parentElement as HTMLElement);
+    expect(popover.getByText("Three characters at least.")).toBeTruthy();
+  });
+
+  it("shows the spinner over the previous results while searching", () => {
+    mocked.logic.mockReturnValue(logicWith({ query: "martak", searching: true }));
+    render(<FriendsPage />);
+
+    expect(screen.getByText("Searching")).toBeTruthy();
+    expect(within(screen.getByRole("listbox")).getByText("Marta Knopf")).toBeTruthy();
   });
 });

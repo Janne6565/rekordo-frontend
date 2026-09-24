@@ -8,11 +8,14 @@ import { Button, PulsingDots } from "@/components/ui";
 import { ActivityFeed } from "@/features/friends/ActivityFeed";
 import { Avatar } from "@/features/friends/Avatar";
 import { ClaimHandlePanel } from "@/features/friends/ClaimHandlePanel";
+import { FriendsSearch } from "@/features/friends/FriendsSearch";
+import { RelationshipButton } from "@/features/friends/RelationshipButton";
 import { useFriendsLogic } from "@/features/friends/useFriendsLogic";
+import { useScrolledLogic } from "@/features/friends/useScrolledLogic";
 import { useCollectionStats } from "@/features/library/useLibraryLogic";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Lock, Search, UserPlus } from "lucide-react";
+import { Lock, Search, UserPlus, X } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -27,6 +30,7 @@ export function FriendsPage() {
   const { t } = useTranslation();
   const logic = useFriendsLogic();
   const stats = useCollectionStats();
+  const { scrolled, onScroll } = useScrolledLogic();
   /** Which of 24g's two phone tabs was picked, or null while the default still holds. */
   const [tab, setTab] = useState<"ACTIVITY" | "FIND" | null>(null);
 
@@ -67,9 +71,11 @@ export function FriendsPage() {
     <AppShell stats={stats}>
       <header className="flex flex-none items-center justify-between gap-4 px-4 pt-5 pb-3.5 sm:px-7 sm:pt-6 sm:pb-4">
         <h1 className="font-serif text-2xl leading-none sm:text-[26px]">{t("friends.title")}</h1>
-        {/* The search field is in the "Find" tab under 640px — see the tab strip below. */}
+        {/* The search field is in the "Find" tab under 640px — see the tab strip below.
+            On the desktop its answer hangs off the field in a popover (1a), so the feed
+            below keeps its scroll position and the reply lands where the eye already is. */}
         <div className="hidden sm:block">
-          <SearchField logic={logic} />
+          <FriendsSearch logic={logic} />
         </div>
       </header>
 
@@ -102,16 +108,19 @@ export function FriendsPage() {
         ))}
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-6 overflow-y-auto px-4 pb-8 sm:px-7">
+      <div
+        onScroll={onScroll}
+        className="flex min-h-0 flex-1 gap-6 overflow-y-auto px-4 pb-8 sm:px-7"
+      >
         <main className={cn("min-w-0 flex-1", pane === "FIND" && "max-sm:hidden")}>
           {/*
-           * Search results and pending requests belong to the pane that has the search
-           * box and the badge counting them — which under 640px is Find, not this one.
-           * Rendered here for the desktop, where both panes are on screen at once, and
-           * in the aside for the phone. Never both: the wrappers are exclusive.
+           * Pending requests belong to the pane that has the badge counting them — which
+           * under 640px is Find, not this one. Pinned here for the desktop, and in the
+           * aside for the phone. Never both: the wrappers are exclusive. The desktop's
+           * search results are not here at all: they live in the header's popover.
            */}
           <div className="max-sm:hidden">
-            <FoundAndPending logic={logic} />
+            <Pending logic={logic} />
           </div>
           <ActivityFeed entries={logic.entries} loading={logic.loading} />
           <p className="mt-6 text-[11.5px] leading-relaxed text-ink-subtle">
@@ -120,12 +129,19 @@ export function FriendsPage() {
         </main>
 
         <aside className={cn("w-full flex-none sm:w-64", pane === "ACTIVITY" && "max-sm:hidden")}>
-          {/* The rail's own search box, which the header gives up under 640px. */}
-          <div className="pt-4 pb-1 sm:hidden">
-            <SearchField logic={logic} />
+          {/* The rail's own search box, which the header gives up under 640px. Pinned to
+              the top of the Find tab (2a) so it can be reached from anywhere in the list,
+              and raised only once something scrolls under it. */}
+          <div
+            className={cn(
+              "sticky top-0 z-10 -mx-4 bg-paper px-4 py-3 sm:hidden",
+              scrolled && "shadow-[0_1px_0_rgba(25,23,19,.09),0_6px_12px_rgba(25,23,19,.05)]",
+            )}
+          >
+            <FindSearchField logic={logic} />
           </div>
           <div className="sm:hidden">
-            <FoundAndPending logic={logic} />
+            <FindTab logic={logic} />
           </div>
           <PeopleRail logic={logic} />
         </aside>
@@ -135,16 +151,41 @@ export function FriendsPage() {
 }
 
 /**
- * What the search turned up, and who is waiting for an answer.
+ * 24g's phone Find tab under its pinned field (2a).
  *
- * One component because the two are the same kind of thing — people you have not decided
- * about yet — and because 24g's phone layout has to show both in its Find tab while the
- * desktop shows them above the feed.
+ * While a query is active the answer is the whole tab: requests and people step aside
+ * (the badge on the tab keeps counting the requests) and come back when the field is
+ * cleared. The field also says why nothing is showing, which a bare empty list never did.
  */
-function FoundAndPending({ logic }: { readonly logic: Logic }) {
+function FindTab({ logic }: { readonly logic: Logic }) {
+  const { t } = useTranslation();
+  if (!logic.queryActive) {
+    return <Pending logic={logic} />;
+  }
   return (
     <>
-      {logic.results.length > 0 && <Results logic={logic} />}
+      {logic.queryTooShort && (
+        <p className="px-1 pt-1 text-[12.5px] leading-normal text-ink-muted">
+          {t("friends.signedOut.tooShort")}
+        </p>
+      )}
+      {logic.nothingFound && (
+        <p className="px-1 pt-1 text-[12.5px] leading-normal text-ink-muted">
+          {t("friends.signedOut.noMatches")}
+        </p>
+      )}
+      {logic.results.length > 0 && <Results logic={logic} touch />}
+      <p className="px-1 pt-4 pb-2.5 text-[11.5px] leading-normal text-ink-subtle">
+        {t("friends.search.comeBack")}
+      </p>
+    </>
+  );
+}
+
+/** Who is waiting for an answer, pinned above the feed on the desktop. */
+function Pending({ logic }: { readonly logic: Logic }) {
+  return (
+    <>
       {logic.incoming.map((invite: FriendRequestDto) => (
         <RequestCard
           key={invite.id}
@@ -176,7 +217,6 @@ function FoundAndPending({ logic }: { readonly logic: Logic }) {
  */
 function SignedOutFind({ logic }: { readonly logic: Logic }) {
   const { t } = useTranslation();
-  const nothingFound = logic.searched && !logic.searching && logic.results.length === 0;
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-7 pb-8 sm:px-7">
       <div className="mx-auto w-full max-w-md">
@@ -188,13 +228,13 @@ function SignedOutFind({ logic }: { readonly logic: Logic }) {
         </p>
 
         <div className="mt-5">
-          <SearchField logic={logic} full />
+          <SearchField logic={logic} />
         </div>
 
         {logic.queryTooShort && (
           <p className="mt-2.5 text-[12px] text-ink-subtle">{t("friends.signedOut.tooShort")}</p>
         )}
-        {nothingFound && (
+        {logic.nothingFound && (
           <p className="mt-2.5 text-[12px] text-ink-subtle">{t("friends.signedOut.noMatches")}</p>
         )}
         {logic.results.length > 0 && (
@@ -222,11 +262,11 @@ function SignedOutFind({ logic }: { readonly logic: Logic }) {
 
 type Logic = ReturnType<typeof useFriendsLogic>;
 
-/** `full` is the signed-out pane, where the field is the page rather than a header slot. */
-function SearchField({ logic, full }: { readonly logic: Logic; readonly full?: boolean }) {
+/** The signed-out pane's field, where the field is the page rather than a header slot. */
+function SearchField({ logic }: { readonly logic: Logic }) {
   const { t } = useTranslation();
   return (
-    <div className={cn("relative", full === true ? "w-full" : "w-72 flex-none")}>
+    <div className="relative w-full">
       <Search
         size={14}
         strokeWidth={1.75}
@@ -244,15 +284,53 @@ function SearchField({ logic, full }: { readonly logic: Logic; readonly full?: b
   );
 }
 
-function Results({ logic }: { readonly logic: Logic }) {
+/** The phone Find tab's pinned field (2a): taller, and a clear button a thumb can hit. */
+function FindSearchField({ logic }: { readonly logic: Logic }) {
+  const { t } = useTranslation();
+  return (
+    <div className="relative">
+      <Search
+        size={14}
+        strokeWidth={1.75}
+        aria-hidden
+        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-subtle"
+      />
+      <input
+        value={logic.query}
+        onChange={(event) => logic.setQuery(event.target.value)}
+        placeholder={t("friends.searchPlaceholder")}
+        aria-label={t("friends.searchPlaceholder")}
+        className={cn(
+          "h-10 w-full rounded-lg border bg-surface pl-8 pr-10 text-[13px] text-ink outline-none placeholder:text-ink-subtle focus:border-ink/25",
+          logic.query.length > 0 ? "border-ink/25" : "border-line",
+        )}
+      />
+      {logic.query.length > 0 && (
+        <button
+          type="button"
+          onClick={() => logic.setQuery("")}
+          aria-label={t("friends.search.clear")}
+          className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-ink-subtle"
+        >
+          <X size={15} strokeWidth={1.75} aria-hidden />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** `touch` is the phone Find tab's list (2a): taller rows and a thumb-sized Add. */
+function Results({ logic, touch }: { readonly logic: Logic; readonly touch?: boolean }) {
   const { t } = useTranslation();
   return (
     <section className="mb-5 rounded-xl border border-line bg-surface p-1.5">
       <div className="px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-subtle">
-        {t("friends.results")}
+        {touch === true
+          ? t("friends.search.results", { count: logic.results.length })
+          : t("friends.results")}
       </div>
       {logic.results.map((person: ProfileSummaryDto) => (
-        <PersonRow key={person.id} person={person} logic={logic} />
+        <PersonRow key={person.id} person={person} logic={logic} touch={touch} />
       ))}
     </section>
   );
@@ -261,11 +339,21 @@ function Results({ logic }: { readonly logic: Logic }) {
 function PersonRow({
   person,
   logic,
-}: { readonly person: ProfileSummaryDto; readonly logic: Logic }) {
+  touch,
+}: { readonly person: ProfileSummaryDto; readonly logic: Logic; readonly touch?: boolean }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-3 rounded-lg px-2.5 py-2 transition-colors duration-(--mc-quick) hover:bg-paper">
-      <Avatar name={person.displayName ?? person.handle ?? ""} src={person.avatarUrl} />
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-lg transition-colors duration-(--mc-quick) hover:bg-paper",
+        touch === true ? "min-h-[52px] py-1.5 pr-1 pl-2.5" : "px-2.5 py-2",
+      )}
+    >
+      <Avatar
+        name={person.displayName ?? person.handle ?? ""}
+        src={person.avatarUrl}
+        size={touch === true ? 32 : undefined}
+      />
       <Link
         to="/friends/$handle"
         params={{ handle: person.handle ?? "" }}
@@ -282,49 +370,9 @@ function PersonRow({
           {person.copyCount != null && ` · ${t("friends.copies", { count: person.copyCount })}`}
         </div>
       </Link>
-      <RelationshipButton person={person} logic={logic} />
+      <RelationshipButton person={person} logic={logic} touch={touch} />
     </div>
   );
-}
-
-/**
- * One button with four states, driven entirely by the server's verdict. The client never
- * works out the relationship for itself — it is a fact about two accounts, not about a
- * page.
- */
-function RelationshipButton({
-  person,
-  logic,
-}: { readonly person: ProfileSummaryDto; readonly logic: Logic }) {
-  const { t } = useTranslation();
-  const flat = "flex-none rounded-md px-2.5 py-1 text-[11.5px] font-medium";
-
-  // A stranger gets no verdict to act on — the server answers the same for everybody when
-  // nobody is asking — and the whole row already leads to the shelf, which is the only
-  // thing they can do here. The invitation to sign in is under the list, said once.
-  if (!logic.signedIn) {
-    return null;
-  }
-
-  switch (person.relationship) {
-    case "FRIENDS":
-      return <span className={cn(flat, "text-ink-subtle")}>{t("friends.state.friends")}</span>;
-    case "REQUEST_SENT":
-      return <span className={cn(flat, "text-ink-subtle")}>{t("friends.state.requested")}</span>;
-    case "SELF":
-      return <span className={cn(flat, "text-ink-subtle")}>{t("friends.state.you")}</span>;
-    default:
-      return (
-        <button
-          type="button"
-          onClick={() => logic.ask.mutate(person.handle ?? "")}
-          disabled={logic.ask.isPending}
-          className={cn(flat, "bg-ink text-paper disabled:opacity-50")}
-        >
-          {t("friends.state.add")}
-        </button>
-      );
-  }
 }
 
 interface RequestCardProps {
@@ -382,10 +430,11 @@ function RequestCard({
   );
 }
 
+/** Steps aside on the phone while a query is active (2a); the desktop rail never does. */
 function PeopleRail({ logic }: { readonly logic: Logic }) {
   const { t } = useTranslation();
   return (
-    <div className="sticky top-0 flex flex-col gap-4">
+    <div className={cn("sticky top-0 flex flex-col gap-4", logic.queryActive && "max-sm:hidden")}>
       <section className="rounded-xl border border-line bg-surface p-1.5">
         <div className="px-2.5 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-subtle">
           {t("friends.people", { count: logic.friends.length })}

@@ -1,5 +1,5 @@
 import { lookupByBarcode, searchAlbums } from "@/api/releases";
-import type { LocalStore, Release } from "@janne6565/rekordo-shared";
+import type { Album, LocalStore, Release } from "@janne6565/rekordo-shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import { createElement } from "react";
@@ -14,12 +14,16 @@ vi.mock("@/api/releases", async (original) => ({
 const settings = new Map<string, string>();
 
 const copies: unknown[] = [];
+/** Every release row written to the catalogue cache, in order. */
+const cached: Release[] = [];
 /** Adding a copy consults the wishlist now (screen 16e), so the fake has to hold one. */
 let wishes: unknown[] = [];
 
 const store = {
   listCopies: async () => [],
-  cacheReleases: async () => {},
+  cacheReleases: async (releases: readonly Release[]) => {
+    cached.push(...releases);
+  },
   putCopy: async (copy: unknown) => {
     copies.push(copy);
   },
@@ -72,6 +76,36 @@ const RELEASE: Release = {
   cachedAt: 0,
 };
 
+/** An Apple search result: an album with no pressing behind it. */
+const ALBUM: Album = {
+  albumId: "applemusic:1440833098",
+  title: "In a Silent Way",
+  artistName: "Miles Davis",
+  year: 1969,
+  primaryType: "Album",
+  coverArtUrl: "https://is1-ssl.mzstatic.com/image/thumb/a/600x600bb.jpg",
+  coverArtTemplate: "https://is1-ssl.mzstatic.com/image/thumb/a/{w}x{h}bb.jpg",
+};
+
+/** The row the phone's `albumAsRelease` writes for {@link ALBUM}, field for field. */
+const ALBUM_ROW = {
+  id: ALBUM.albumId,
+  albumId: ALBUM.albumId,
+  title: ALBUM.title,
+  artistName: ALBUM.artistName,
+  year: ALBUM.year,
+  format: "OTHER",
+  label: null,
+  catalogNumber: null,
+  country: null,
+  barcode: null,
+  releaseDate: null,
+  trackCount: null,
+  discCount: null,
+  coverArtUrl: ALBUM.coverArtUrl,
+  coverTheme: null,
+};
+
 /**
  * Lets the debounce fire and the query that follows it settle.
  *
@@ -101,6 +135,7 @@ describe("useAddDialogLogic", () => {
   beforeEach(() => {
     settings.clear();
     copies.length = 0;
+    cached.length = 0;
     wishes = [];
     vi.mocked(searchAlbums).mockClear();
     vi.useFakeTimers();
@@ -276,6 +311,60 @@ describe("useAddDialogLogic", () => {
     await settle();
 
     expect((wishes[0] as { deletedAt: number | null }).deletedAt).toBeNull();
+  });
+
+  it("caches the album as a release row when a copy is filed with no pressing", async () => {
+    // The copy carries no title of its own. Without the row the shelf drew it as a dash,
+    // the tracklist had no id to ask with, and sync had nothing to hand the server.
+    const { result } = harness();
+
+    await act(async () => result.current.openPressingStep(ALBUM, "SHELF"));
+    await act(async () => result.current.commitPressingStep());
+    await settle();
+
+    expect(copies).toHaveLength(1);
+    expect(copies[0]).toMatchObject({ albumId: ALBUM.albumId, releaseId: null });
+    expect(cached).toHaveLength(1);
+    expect(cached[0]).toMatchObject(ALBUM_ROW);
+    // Keyed where the copy is looked up: `catalogueKeyOf` falls back to the album id.
+    expect(cached[0]?.id).toBe((copies[0] as { albumId: string }).albumId);
+  });
+
+  it("caches the album as a release row when it is wished for with no pressing", async () => {
+    const { result } = harness();
+
+    await act(async () => result.current.openPressingStep(ALBUM, "WISHLIST"));
+    await act(async () => result.current.commitPressingStep());
+    await settle();
+
+    expect(wishes).toHaveLength(1);
+    expect(wishes[0]).toMatchObject({ albumId: ALBUM.albumId, releaseId: null });
+    expect(cached).toEqual([expect.objectContaining(ALBUM_ROW)]);
+  });
+
+  it("takes a waiting wish off the list when the album is filed with no pressing", async () => {
+    wishes = [
+      {
+        id: "w1",
+        albumId: ALBUM.albumId,
+        title: ALBUM.title,
+        artistName: ALBUM.artistName,
+        year: ALBUM.year,
+        desiredFormat: null,
+        note: null,
+        sortIndex: null,
+        createdAt: 1,
+        deletedAt: null,
+        fieldClocks: {},
+      },
+    ];
+    const { result } = harness();
+
+    await act(async () => result.current.openPressingStep(ALBUM, "SHELF"));
+    await act(async () => result.current.commitPressingStep());
+    await settle();
+
+    expect((wishes[0] as { deletedAt: number | null }).deletedAt).not.toBeNull();
   });
 
   it("drops the picked row once it has been added", async () => {

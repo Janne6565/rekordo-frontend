@@ -1,5 +1,6 @@
 import { lookupByBarcode, lookupRelease, searchAlbums } from "@/api/releases";
 import { fromCsv } from "@/domain/csv";
+import { albumAsRelease } from "@/features/add/albumRelease";
 import { useSatisfyWishes } from "@/features/wishlist/useSatisfyWishes";
 import { useStore } from "@/local/StoreProvider";
 import { rememberCopyOrigins } from "@/local/dexieStore";
@@ -286,12 +287,16 @@ export function useAddDialogLogic(
    * tell it apart from a pressing somebody actually chose. Null says the honest thing and
    * the pressing can still be named later.
    *
-   * Nothing is cached alongside it the way a pressing is. There is no release row to keep,
-   * and the album's own metadata is not the app's to mirror -- the shelf draws this copy
-   * from what the copy itself carries.
+   * The album is cached as the release row the copy is looked up by (`catalogueKeyOf`
+   * falls back to the album id), exactly as the phone does. The copy itself carries no
+   * title, so without the row the shelf and the detail page drew it as a dash, the
+   * tracklist had no id to ask with, and sync had nothing to hand the server alongside
+   * the copy -- which left it untitled on every friend's screen and in the feed.
    */
   const addAlbum = useMutation({
     mutationFn: async ({ album, format: chosen }: { album: Album; format: Format | null }) => {
+      const release = albumAsRelease(album, Date.now());
+      await store.cacheReleases([release]);
       const base = createAlbumCopy(
         album,
         emptyDraft(await readDefaultCurrency(store)),
@@ -304,12 +309,14 @@ export function useAddDialogLogic(
       const copy = chosen === null ? base : applyCopyPatch(base, { manualFormat: chosen }, clock);
       await store.putCopy(copy);
       await rememberCopyOrigins(store, [copy.id], "MANUAL");
-      return copy;
+      return { copy, release };
     },
-    onSuccess: async () => {
+    onSuccess: async ({ copy, release }) => {
       await queryClient.invalidateQueries({ queryKey: ["copies"] });
       await queryClient.invalidateQueries({ queryKey: ["stats"] });
       await queryClient.invalidateQueries({ queryKey: ["ownedMbids"] });
+      // Screen 16e, as for a pressing: filing the record takes a waiting wish off the list.
+      await satisfyWishes(copy, release);
       setSelected(null);
       setAdded((counts) => ({ ...counts, shelf: counts.shelf + 1 }));
     },
@@ -325,6 +332,10 @@ export function useAddDialogLogic(
    */
   const wishAlbum = useMutation({
     mutationFn: async ({ album, format: chosen }: { album: Album; format: Format | null }) => {
+      // The same row a copy of the album caches, as the phone writes it for a wish too:
+      // the album's facts are on screen now and cost nothing to keep, and the copy that
+      // later satisfies the wish finds its row already there.
+      await store.cacheReleases([albumAsRelease(album, Date.now())]);
       const item = createWishlistItem(
         {
           albumId: album.albumId,

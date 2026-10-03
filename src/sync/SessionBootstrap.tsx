@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { announcePush, onPushElsewhere } from "@/sync/pushBroadcast";
 import { readSyncStart } from "@/sync/syncStart";
 import { createSyncEngine } from "@/sync/transport";
-import { useSyncLoop } from "@janne6565/rekordo-shared";
+import { sweepOrphanPhotos, useSyncLoop } from "@janne6565/rekordo-shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useCallback, useEffect, useMemo } from "react";
 
@@ -123,6 +123,19 @@ export function SessionBootstrap({ children }: { readonly children: ReactNode })
 
   // A pass on start, one a moment after every local edit, and the interval as the fallback.
   const { flush } = useSyncLoop({ active, run, localWrites, intervalMs: SYNC_INTERVAL_MS });
+
+  /*
+   * An anonymous tab never syncs, and the sync pass is where a removed record's photos are
+   * put down. So it gets the sweep on its own, once per load: the bytes live only in this
+   * browser, and nothing else would ever free them.
+   */
+  const anonymous = auth.status === "anonymous";
+  useEffect(() => {
+    if (!anonymous) return;
+    void sweepOrphanPhotos(store, clock, Date.now()).then((swept) => {
+      if (swept > 0) void queryClient.invalidateQueries();
+    });
+  }, [anonymous, store, clock, queryClient]);
 
   useEffect(() => {
     if (!active) return;

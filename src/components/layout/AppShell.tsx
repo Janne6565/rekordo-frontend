@@ -4,7 +4,6 @@ import { AppBanner } from "@/features/app/AppBanner";
 import { SidebarAccount } from "@/features/auth/SidebarAccount";
 import { cn } from "@/lib/utils";
 import type { CollectionStats } from "@janne6565/rekordo-shared";
-import { FORMAT_LABELS } from "@janne6565/rekordo-shared";
 import { Link } from "@tanstack/react-router";
 import { Heart, LibraryBig, Users } from "lucide-react";
 import type { ReactNode } from "react";
@@ -78,31 +77,10 @@ function Sidebar({ stats }: { readonly stats: CollectionStats | undefined }) {
         {/* Artists and Settings from screen 1f are not built yet. A link to a route that
             does not exist is worse than no link, so they appear when they work. */}
       </div>
-      {stats !== undefined && <FormatCounts stats={stats} />}
       {/* The legal links live in this block's menu since 19a — the sidebar used to end
           in two stacked footers, each with its own border and weight. */}
       <SidebarAccount copyCount={stats?.copyCount} />
     </nav>
-  );
-}
-
-function FormatCounts({ stats }: { readonly stats: CollectionStats }) {
-  const { t } = useTranslation();
-  return (
-    <div>
-      <div className="px-2.5 pb-2 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-subtle">
-        {t("library.formats")}
-      </div>
-      {(["VINYL", "CD", "CASSETTE", "DIGITAL"] as const).map((format) => (
-        <div
-          key={format}
-          className="flex items-center justify-between px-2.5 py-1.5 text-[12.5px] font-medium text-ink/70"
-        >
-          {FORMAT_LABELS[format]}
-          <span className="font-mono text-[11px] text-ink-subtle">{stats.byFormat[format]}</span>
-        </div>
-      ))}
-    </div>
   );
 }
 

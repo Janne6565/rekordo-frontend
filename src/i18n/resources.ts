@@ -328,7 +328,6 @@ const enCommon = {
   },
   library: {
     title: "Library",
-    formats: "Formats",
     counts: "{{copies}} copies · {{releases}} releases",
     searchPlaceholder: "Search artist, title, catalog number",
     /* 24b: the phone's field is 200px wide — the long placeholder is unreadable in it. */
@@ -1816,7 +1815,6 @@ const deCommon: CommonSchema = {
   },
   library: {
     title: "Sammlung",
-    formats: "Formate",
     counts: "{{copies}} Exemplare · {{releases}} Veröffentlichungen",
     searchPlaceholder: "Künstler, Titel, Katalognummer suchen",
     searchShort: "Suchen",
